@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:demo3bismillah/app/routes/app_routes.dart';
 import 'package:demo3bismillah/app/data/services/supabase_service.dart';
 import 'package:get/get.dart';
-
+import 'package:demo3bismillah/app/data/providers/auth_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Get.putAsync<SupabaseService>(
     () async => await SupabaseService().init(),
   );
+  Get.put(AuthProvider());
+
   runApp(const MyApp());
 }
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 

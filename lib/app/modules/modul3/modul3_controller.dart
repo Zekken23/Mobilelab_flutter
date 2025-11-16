@@ -15,8 +15,7 @@ class Modul3Controller extends GetxController {
     required this.dioService,
     required this.customerService, 
   });
-
-  // State untuk hasil eksperimen (tetap RxString untuk ditampilkan di UI)
+  
   final RxString httpResult = "Tekan tombol untuk memulai...".obs;
   final RxString dioResult = "Tekan tombol untuk memulai...".obs;
   final RxString asyncAwaitResult = "Tekan tombol untuk memulai...".obs;
@@ -30,8 +29,6 @@ class Modul3Controller extends GetxController {
 
   final Stopwatch _stopwatch = Stopwatch();
 
-  // --- EKSPERIMEN 1: Performa "Pemesanan" (http vs Dio) ---
-  // Skenario: Ambil data Pelanggan (mock) + data Lokasi (API)
 
   Future<void> runHttpExperiment() async {
     isHttpLoading(true);
