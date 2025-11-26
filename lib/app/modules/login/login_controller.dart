@@ -25,7 +25,3 @@ class LoginController extends GetxController {
     }
   }
 }
-
-// login_view.dart
-// (Bagian UI sederhana, implementasikan TextField dan Button sesuai gambar Login)
-// Gunakan Obx(() => ...) untuk membungkus tombol login agar loading state terlihat.
