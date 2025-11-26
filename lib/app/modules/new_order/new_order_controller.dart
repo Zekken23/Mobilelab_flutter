@@ -19,7 +19,7 @@ class NewOrderController extends GetxController {
   final RxBool isLoading = false.obs;
 
   // Ambil Supabase client
-  final SupabaseClient _client = Get.find<SupabaseService>().client;
+  late SupabaseClient client;
 
   // Controller untuk setiap text field
   late TextEditingController nameController;
@@ -31,7 +31,7 @@ class NewOrderController extends GetxController {
     'Cuci Kiloan',
     'Cuci Kering (Dry Clean)',
     'Cuci Satuan (Bed Cover/Karpet)',
-    'Setrika Saja'
+    'Setrika Saja',
   ];
 
   // State untuk menyimpan pilihan pembayaran
@@ -39,6 +39,7 @@ class NewOrderController extends GetxController {
 
   @override
   void onInit() {
+    client = Get.find<SupabaseService>().client;
     super.onInit();
     nameController = TextEditingController();
     addressController = TextEditingController();
@@ -98,7 +99,7 @@ class NewOrderController extends GetxController {
       );
 
       // 4. Kirim data ke tabel 'orders' di Supabase
-      await _client.from('orders').insert(newOrder.toJson());
+      await client.from('orders').insert(newOrder.toJson());
 
       // 5. Jika berhasil, update counter lokal (jika masih dipakai)
       //    dan tampilkan snackbar sukses
@@ -116,7 +117,6 @@ class NewOrderController extends GetxController {
 
       // 6. Kembali ke halaman sebelumnya
       Get.back();
-
     } catch (e) {
       // 7. Jika ada error dari Supabase, tampilkan
       Get.snackbar(

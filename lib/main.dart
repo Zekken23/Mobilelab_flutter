@@ -1,7 +1,13 @@
+import 'package:demo3bismillah/app/data/services/supabase_service.dart';
 import 'package:flutter/material.dart';
 import 'package:demo3bismillah/app/routes/app_routes.dart';
+import 'package:get/get.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Get.putAsync<SupabaseService>(
+    () async => await SupabaseService().init(),
+  );
   runApp(const MyApp());
 }
 
@@ -14,8 +20,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Laundry Logistics',
       theme: ThemeData(
-        primaryColor: Colors.blue.shade600, 
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue.shade600), 
+        primaryColor: Colors.blue.shade600,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue.shade600),
         useMaterial3: true,
         scaffoldBackgroundColor: const Color(0xFFF0F2F5),
         cardTheme: CardThemeData(
