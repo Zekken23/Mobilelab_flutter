@@ -12,7 +12,7 @@ class SplashView extends GetView<SplashController> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Ganti dengan aset logo Anda
-            Image.asset('assets/logo_raja_cuci.png', width: 200),
+            Image.asset('assets/logorajalaundry.png', width: 200),
           ],
         ),
       ),

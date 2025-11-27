@@ -6,59 +6,92 @@ import 'package:geolocator/geolocator.dart';
 
 class OrderController extends GetxController {
   final mapController = MapController();
-  // Koordinat Default (Misal UMM)
-  var currentPosition = LatLng(-7.9213, 112.5996).obs; 
-  var address = "Mencari lokasi...".obs;
+  
+  // Koordinat Default (Kampus UMM)
+  final defaultLocation = LatLng(-7.9213, 112.5996);
+
+  var currentPosition = LatLng(-7.9213, 112.5996).obs;
+  var currentZoom = 15.0.obs;
+  var address = "Siap mencari lokasi...".obs;
   var markers = <Marker>[].obs;
 
   @override
   void onInit() {
     super.onInit();
-    getCurrentLocation();
+    Future.delayed(Duration(seconds: 1), () => getCurrentLocation());
   }
 
   Future<void> getCurrentLocation() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    // Cek GPS nyala/tidak
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      Get.snackbar("Error", "Location services are disabled.");
-      return;
-    }
-
-    // Cek Izin Lokasi
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        Get.snackbar("Error", "Location permissions are denied");
+    address.value = "Sedang mencari sinyal GPS...";
+    
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        address.value = "GPS mati. Menggunakan lokasi default.";
+        _useDefaultLocation();
         return;
       }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          address.value = "Izin ditolak. Menggunakan lokasi default.";
+          _useDefaultLocation();
+          return;
+        }
+      }
+
+      // --- PERBAIKAN UTAMA: Tambahkan timeLimit ---
+      // Jika 10 detik tidak dapat lokasi, batalkan dan pakai default
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 10), 
+      );
+
+      _updatePosition(position.latitude, position.longitude);
+
+    } catch (e) {
+      // Jika Timeout atau Error lain
+      print("Error Location: $e");
+      address.value = "Sinyal lemah/Timeout. Menggunakan lokasi default.";
+      Get.snackbar("Info", "Gagal mendapat lokasi akurat, menggunakan lokasi default.");
+      _useDefaultLocation();
     }
+  }
 
-    // Ambil Lokasi (High Accuracy = GPS)
-    Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high
-    );
+  void _useDefaultLocation() {
+    _updatePosition(defaultLocation.latitude, defaultLocation.longitude);
+  }
 
-    // Update data state
-    currentPosition.value = LatLng(position.latitude, position.longitude);
-    address.value = "Lat: ${position.latitude}, Lng: ${position.longitude}";
+  void _updatePosition(double lat, double long) {
+    currentPosition.value = LatLng(lat, long);
+    address.value = "Lat: $lat, Lng: $long";
 
-    // Tambah Marker
     markers.clear();
     markers.add(
       Marker(
         point: currentPosition.value,
         width: 80,
         height: 80,
-        child: const Icon(Icons.location_on, color: Colors.red, size: 40),
+        child: const Icon(Icons.location_on, color: Colors.red, size: 50),
       ),
     );
-    
-    // Pindahkan kamera map
-    mapController.move(currentPosition.value, 15);
+
+    mapController.move(currentPosition.value, currentZoom.value);
+  }
+
+  void zoomIn() {
+    if (currentZoom.value < 18) {
+      currentZoom.value++;
+      mapController.move(currentPosition.value, currentZoom.value);
+    }
+  }
+
+  void zoomOut() {
+    if (currentZoom.value > 5) {
+      currentZoom.value--;
+      mapController.move(currentPosition.value, currentZoom.value);
+    }
   }
 }
