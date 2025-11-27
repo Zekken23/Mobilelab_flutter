@@ -2,178 +2,261 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dashboard_controller.dart';
-import '../order/order_view.dart'; // Import view order/booking
+import '../order/order_view.dart'; // Halaman Booking/Map
+import '../chat/chat_view.dart';
+import '../profile/profile_view.dart';
 
 class DashboardView extends GetView<DashboardController> {
   const DashboardView({super.key});
 
   @override
-  Widget build(BuildContext context) {
+Widget build(BuildContext context) {
     return Scaffold(
-      // Body akan berubah sesuai tab yang dipilih
+      backgroundColor: const Color(0xFFF6F8FB),
       body: Obx(() => IndexedStack(
         index: controller.tabIndex.value,
         children: [
-          _buildHomeView(),   // Index 0: Home Dashboard
-          OrderView(),        // Index 1: Booking/Order (Peta)
-          _buildProfileView(),// Index 2: Account/Profile (Logout disini)
+          _buildHomeView(),    // Index 0: Home
+          OrderView(),         // Index 1: Booking
+          ChatView(),          // Index 2: Chat
+          const ProfileView(), // Index 3: Profile (Panggil Class Baru)
         ],
       )),
       
       // Bottom Navigation Bar
-      bottomNavigationBar: Obx(() => BottomNavigationBar(
-        currentIndex: controller.tabIndex.value,
-        onTap: controller.changeTabIndex,
-        selectedItemColor: Colors.blueAccent,
-        unselectedItemColor: Colors.grey,
-        showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: 'Booking'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
-        ],
-      )),
-    );
+        bottomNavigationBar: Obx(() => Container(
+          decoration: BoxDecoration(
+            boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)]
+          ),
+          child: BottomNavigationBar(
+            currentIndex: controller.tabIndex.value,
+            onTap: controller.changeTabIndex,
+            selectedItemColor: Colors.black,
+            unselectedItemColor: Colors.grey,
+            showUnselectedLabels: true,
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.white,
+            elevation: 0,
+            items: const [
+              BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Home'),
+              BottomNavigationBarItem(icon: Icon(Icons.calendar_today_outlined), activeIcon: Icon(Icons.calendar_today), label: 'Booking'),
+              BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), label: 'Chat'),
+              BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Account'),
+            ],
+         ),
+       )),
+     );
   }
 
-  // --- TAMPILAN HOME (KODE SEBELUMNYA) ---
+  // --- TAMPILAN UTAMA (HOME) ---
   Widget _buildHomeView() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(top: 50, left: 16, right: 16, bottom: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header Profile Kecil
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Hi, Enno Penas", style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18)),
-                  Text("ennopenas@gmail.com", style: GoogleFonts.poppins(color: Colors.grey, fontSize: 12)),
-                ],
-              ),
-              const CircleAvatar(
-                backgroundImage: AssetImage('assets/profile_placeholder.png'), // Pastikan ada aset ini atau hapus
-                backgroundColor: Colors.blueAccent,
-              )
-            ],
-          ),
-          const SizedBox(height: 20),
-          
-          // Banner Biru
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: const Color(0xFF2D9CDB),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 1. HEADER PROFILE
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("SUPER WASH", style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
-                      Text("Quality Laundry Service", style: GoogleFonts.poppins(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
+                Row(
+                  children: [
+                    // Foto Profile
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: DecorationImage(
+                          image: AssetImage('assets/profile_placeholder.png'), // Pastikan ada aset ini atau hapus baris ini
+                          fit: BoxFit.cover,
+                        ),
+                        color: Colors.blueAccent, // Fallback color
+                      ),
+                      child: const Icon(Icons.person, color: Colors.white), // Fallback icon
+                    ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Enno Penas", style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text("ennopenas@gmail.com", style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey)),
+                      ],
+                    ),
+                  ],
                 ),
-                const Icon(Icons.local_laundry_service, color: Colors.white, size: 50),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 5)]),
+                  child: const Icon(Icons.notifications_active, color: Colors.orange, size: 24),
+                )
               ],
             ),
-          ),
-          const SizedBox(height: 20),
 
-          // Services Grid
-          Text("Services", style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16)),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _serviceCard("Cuci Basah", Icons.water_drop_outlined),
-              _serviceCard("Cuci Kering", Icons.dry_cleaning),
-              _serviceCard("Setrika", Icons.iron),
-            ],
-          ),
-        ],
+            const SizedBox(height: 20),
+
+            // 2. LOCATION BAR (Kotak Biru)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(colors: [Color(0xFF2E3192), Color(0xFF1BFFFF)]), // Gradasi Biru
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
+                    child: const Icon(Icons.location_on, color: Colors.white),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Your Location", style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12)),
+                        Text("Tegalgondo, Malang, Jawa Timur", style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14), overflow: TextOverflow.ellipsis),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // 3. SEARCH BAR
+            TextField(
+              decoration: InputDecoration(
+                hintText: "Search for service...",
+                hintStyle: GoogleFonts.poppins(color: Colors.grey),
+                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none),
+                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // 4. SERVICES SECTION
+            _buildSectionHeader("Services"),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildServiceItem("Cuci Basah", Icons.local_laundry_service, Colors.blue.shade100, Colors.blue),
+                _buildServiceItem("Cuci Kering", Icons.dry_cleaning, Colors.orange.shade100, Colors.orange),
+                _buildServiceItem("Setrika Wangi", Icons.iron, Colors.purple.shade100, Colors.purple),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+
+            // 5. BANNER PROMO
+            Container(
+              width: double.infinity,
+              height: 140,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFF00A8E8), // Warna Biru Banner
+                borderRadius: BorderRadius.circular(20),
+                image: const DecorationImage(
+                   image: AssetImage('assets/superwash.png'), 
+                   fit: BoxFit.cover, 
+                )
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // 6. PRICE LIST SECTION
+            _buildSectionHeader("Price List"),
+            const SizedBox(height: 12),
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 2.2, // Mengatur bentuk kotak agar melebar
+              children: [
+                _buildPriceCard("Cuci Basah", "Rp. 10.000", Icons.local_laundry_service, Colors.blue.shade50),
+                _buildPriceCard("Cuci Wangi", "Rp. 15.000", Icons.local_offer, Colors.purple.shade50),
+                _buildPriceCard("Cuci Kering", "Rp. 13.000", Icons.dry_cleaning, Colors.orange.shade50),
+                _buildPriceCard("Cuci Sepatu", "Rp. 13.000", Icons.roller_skating, Colors.yellow.shade50),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _serviceCard(String title, IconData icon) {
+  // --- WIDGET HELPERS ---
+
+  Widget _buildSectionHeader(String title) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(title, style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text("See all", style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey, decoration: TextDecoration.underline)),
+      ],
+    );
+  }
+
+  Widget _buildServiceItem(String title, IconData icon, Color bgColor, Color iconColor) {
+    return Column(
+      children: [
+        Container(
+          width: 70,
+          height: 70,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 10, spreadRadius: 1)],
+          ),
+          child: Center(
+            child: Icon(icon, size: 32, color: iconColor), // Icon pengganti gambar
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(title, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600)),
+      ],
+    );
+  }
+
+  Widget _buildPriceCard(String title, String price, IconData icon, Color bgColor) {
     return Container(
-      width: 100,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 5, spreadRadius: 1)]
+        color: bgColor, // Warna background tipis
+        borderRadius: BorderRadius.circular(16),
       ),
-      child: Column(
+      child: Row(
         children: [
-          Icon(icon, size: 40, color: Colors.blueAccent),
-          const SizedBox(height: 8),
-          Text(title, style: GoogleFonts.poppins(fontSize: 12), textAlign: TextAlign.center)
-        ],
-      ),
-    );
-  }
-
-  // --- TAMPILAN PROFILE (BARU) ---
-  Widget _buildProfileView() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 60, left: 20, right: 20),
-      child: Column(
-        children: [
-          // Foto Profile Besar
-          const CircleAvatar(
-            radius: 50,
-            backgroundColor: Colors.blueAccent,
-            child: Icon(Icons.person, size: 50, color: Colors.white),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+            child: Icon(icon, size: 20, color: Colors.black54),
           ),
-          const SizedBox(height: 10),
-          Text("Enno Penas", style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold)),
-          Text("ennopenas@gmail.com", style: GoogleFonts.poppins(color: Colors.grey)),
-          
-          const SizedBox(height: 40),
-
-          // Menu Options
-          _profileMenuOption(Icons.person_outline, "Edit Profile"),
-          _profileMenuOption(Icons.settings_outlined, "Settings"),
-          _profileMenuOption(Icons.help_outline, "Help & Support"),
-          
-          const Divider(),
-          
-          // TOMBOL LOGOUT
-          ListTile(
-            onTap: () => controller.logout(), // Memanggil fungsi di Controller
-            leading: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(8)),
-              child: const Icon(Icons.logout, color: Colors.red),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(title, style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 13)),
+                const SizedBox(height: 4),
+                Text(price, style: GoogleFonts.poppins(color: Colors.grey, fontSize: 11)),
+              ],
             ),
-            title: Text("Log Out", style: GoogleFonts.poppins(color: Colors.red, fontWeight: FontWeight.w600)),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.red),
-          ),
+          )
         ],
       ),
-    );
-  }
-
-  Widget _profileMenuOption(IconData icon, String title) {
-    return ListTile(
-      onTap: () {},
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(8)),
-        child: Icon(icon, color: Colors.blueAccent),
-      ),
-      title: Text(title, style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
     );
   }
 }
