@@ -12,7 +12,8 @@ class ChatView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      // Ubah background scaffold jadi putih bersih, karena area chat sudah punya BG sendiri nanti
+      backgroundColor: Colors.white, 
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -36,20 +37,38 @@ class ChatView extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // --- AREA CHAT ---
+          // --- AREA CHAT DENGAN BACKGROUND ---
           Expanded(
-            child: Obx(() => ListView.builder(
-              controller: controller.scrollC,
-              padding: const EdgeInsets.all(20),
-              itemCount: controller.messages.length,
-              itemBuilder: (context, index) {
-                final msg = controller.messages[index];
-                return _buildChatBubble(msg);
-              },
-            )),
+            // Kita gunakan STACK di sini untuk menumpuk Background dan ListView
+            child: Stack(
+              fit: StackFit.expand, // Agar children memenuhi area Expanded
+              children: [
+                // LAYER 1: Gambar Background (Paling Belakang)
+                Image.asset(
+                  'assets/chatbackground.png', // Pastikan nama file sesuai
+                  fit: BoxFit.cover, // Agar gambar memenuhi area tanpa distorsi
+                ),
+                
+                // OPSIONAL: Overlay Transparan (Jika gambar terlalu terang/ramai agar chat terbaca)
+                // Container(
+                //   color: Colors.white.withOpacity(0.6), 
+                // ),
+
+                // LAYER 2: Daftar Pesan Chat (Di Depan Background)
+                Obx(() => ListView.builder(
+                  controller: controller.scrollC,
+                  padding: const EdgeInsets.all(20),
+                  itemCount: controller.messages.length,
+                  itemBuilder: (context, index) {
+                    final msg = controller.messages[index];
+                    return _buildChatBubble(msg);
+                  },
+                )),
+              ],
+            ),
           ),
 
-          // --- AREA INPUT ---
+          // --- AREA INPUT (Tetap solid putih di bawah) ---
           _buildInputArea(),
         ],
       ),
@@ -75,7 +94,8 @@ class ChatView extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFF8C9EFF).withOpacity(0.8), 
+                // Saya ubah sedikit opacitynya agar sedikit lebih solid di atas background
+                color: const Color(0xFF8C9EFF).withOpacity(0.9), 
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(12),
                   topRight: const Radius.circular(12),
@@ -96,7 +116,9 @@ class ChatView extends StatelessWidget {
               padding: const EdgeInsets.only(left: 10),
               child: const CircleAvatar(
                 radius: 15,
-                backgroundImage: AssetImage('assets/profile_placeholder.png'), // Ganti dengan aset profilmu
+                // Pastikan aset ini ada atau ganti dengan Icon sementara jika error
+                backgroundImage: AssetImage('assets/logorajalaundry.png'), 
+                // child: Icon(Icons.person, size: 15), // Gunakan ini jika belum ada gambar
               ),
             ),
         ],
@@ -105,9 +127,14 @@ class ChatView extends StatelessWidget {
   }
 
   Widget _buildInputArea() {
+    // Container ini akan tetap berlatar putih solid
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      color: Colors.white,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        // Opsional: Tambah shadow sedikit di atas area input biar misah sama chat area
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 2, offset: Offset(0, -1))]
+      ),
       child: SafeArea(
         child: Row(
           children: [

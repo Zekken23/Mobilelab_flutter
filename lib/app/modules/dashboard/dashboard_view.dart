@@ -56,7 +56,6 @@ Widget build(BuildContext context) {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. HEADER PROFILE
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -69,12 +68,12 @@ Widget build(BuildContext context) {
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                         image: DecorationImage(
-                          image: AssetImage('assets/profile_placeholder.png'), // Pastikan ada aset ini atau hapus baris ini
+                          image: AssetImage('assets/logorajalaundry.png'), 
                           fit: BoxFit.cover,
                         ),
                         color: Colors.blueAccent, // Fallback color
                       ),
-                      child: const Icon(Icons.person, color: Colors.white), // Fallback icon
+                      child: const Icon(Icons.person, color: Colors.white), // hapus aja jika ndak diperlukan
                     ),
                     const SizedBox(width: 12),
                     Column(
