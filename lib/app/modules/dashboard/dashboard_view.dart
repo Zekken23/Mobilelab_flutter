@@ -196,8 +196,6 @@ Widget build(BuildContext context) {
     );
   }
 
-  // --- WIDGET HELPERS ---
-
   Widget _buildSectionHeader(String title) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,

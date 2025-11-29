@@ -12,34 +12,38 @@ class OrderController extends GetxController {
   final namaC = TextEditingController();
   final noTelpC = TextEditingController();
   final alamatC = TextEditingController();
-  final itemsC = TextEditingController(); // Untuk list pakaian
+  final itemsC = TextEditingController(); 
   
   // --- STATE VARIABLES ---
   var currentPosition = LatLng(-7.9213, 112.5996).obs; 
   var currentZoom = 15.0.obs;
-  var addressMap = "Mencari lokasi...".obs;
+  var addressMap = "Mencari lokasi...".obs; // Ini akan ditampilkan di bawah map
   var markers = <Marker>[].obs;
-  
   var isLoading = false.obs;
 
-  // Pilihan User
+  // --- MODUL 5 FEATURES ---
+  var useHighAccuracy = true.obs; // Toggle: True = GPS, False = Network
+
+  // --- PILIHAN USER ---
   var selectedService = "".obs;
-  var selectedPickupDate = "".obs;
-  var selectedDeliveryDate = "".obs;
-  var selectedTime = "".obs;
+  var selectedPickupDate = "".obs; 
+  var selectedDeliveryDate = "".obs; 
+  var selectedTime = "".obs; 
 
   @override
   void onInit() {
     super.onInit();
-    // Delay sedikit agar map siap
     Future.delayed(const Duration(seconds: 1), () => getCurrentLocation());
   }
 
-  // --- FUNGSI MAPS (SAMA SEPERTI SEBELUMNYA) ---
+  // --- FUNGSI MAPS ---
   Future<void> getCurrentLocation() async {
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) return;
+      if (!serviceEnabled) {
+        addressMap.value = "GPS/Lokasi dimatikan";
+        return;
+      }
 
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
@@ -47,13 +51,20 @@ class OrderController extends GetxController {
         if (permission == LocationPermission.denied) return;
       }
 
+      // PILIH AKURASI BERDASARKAN MODE (Modul 5)
+      LocationAccuracy accuracy = useHighAccuracy.value 
+          ? LocationAccuracy.bestForNavigation // GPS (Akurasi Tinggi)
+          : LocationAccuracy.medium;           // Network (Hemat Baterai/Wifi)
+
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 10),
+        desiredAccuracy: accuracy,
       );
 
       currentPosition.value = LatLng(position.latitude, position.longitude);
-      addressMap.value = "Lat: ${position.latitude}, Lng: ${position.longitude}";
+      
+      // Update teks koordinat
+      String mode = useHighAccuracy.value ? "GPS" : "Network";
+      addressMap.value = "Lat: ${position.latitude.toStringAsFixed(5)}, Lng: ${position.longitude.toStringAsFixed(5)} ($mode)";
 
       markers.clear();
       markers.add(
@@ -67,10 +78,12 @@ class OrderController extends GetxController {
 
       mapController.move(currentPosition.value, currentZoom.value);
     } catch (e) {
-      Get.snackbar("Info", "Gagal memuat lokasi: $e");
+      addressMap.value = "Gagal ambil lokasi";
+      print("Error: $e");
     }
   }
 
+  // --- FUNGSI ZOOM CONTROLS ---
   void zoomIn() {
     if (currentZoom.value < 18) {
       currentZoom.value++;
@@ -85,15 +98,26 @@ class OrderController extends GetxController {
     }
   }
 
-  // --- FUNGSI SUBMIT KE SUPABASE ---
+  // --- FUNGSI TOGGLE MODE GPS/NETWORK ---
+  void toggleLocationMode() {
+    useHighAccuracy.toggle();
+    getCurrentLocation(); // Refresh lokasi dengan mode baru
+    Get.snackbar(
+      "Mode Berubah", 
+      useHighAccuracy.value ? "Mode GPS Diaktifkan" : "Mode Network (Hemat Baterai)",
+      snackPosition: SnackPosition.TOP,
+      duration: const Duration(seconds: 1),
+    );
+  }
+
+  // --- FUNGSI SUBMIT KE SUPABASE (Sama seperti sebelumnya) ---
   Future<void> submitOrder() async {
     if (namaC.text.isEmpty || noTelpC.text.isEmpty || selectedService.value.isEmpty) {
-      Get.snackbar("Error", "Mohon lengkapi Nama, No Telp, dan Pilih Service");
+      Get.snackbar("Error", "Mohon lengkapi data", backgroundColor: Colors.red, colorText: Colors.white);
       return;
     }
 
     isLoading.value = true;
-
     try {
       await Supabase.instance.client.from('orders').insert({
         'nama': namaC.text,
@@ -107,12 +131,23 @@ class OrderController extends GetxController {
         'waktu_jemput': selectedTime.value,
       });
 
-      Get.snackbar("Sukses", "Pesanan berhasil dibuat!");
-      Get.back(); // Kembali ke dashboard
+      Get.snackbar("Berhasil", "Pesanan dikirim!", backgroundColor: Colors.green, colorText: Colors.white);
+      clearForm();
     } catch (e) {
-      Get.snackbar("Error", "Gagal membuat pesanan: $e");
+      Get.snackbar("Gagal", "Error: $e", backgroundColor: Colors.red, colorText: Colors.white);
     } finally {
       isLoading.value = false;
     }
+  }
+
+  void clearForm() {
+    namaC.clear();
+    noTelpC.clear();
+    alamatC.clear();
+    itemsC.clear();
+    selectedService.value = "";
+    selectedPickupDate.value = "";
+    selectedDeliveryDate.value = "";
+    selectedTime.value = "";
   }
 }
