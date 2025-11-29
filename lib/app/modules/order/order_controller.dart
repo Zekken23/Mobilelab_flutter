@@ -23,7 +23,7 @@ class OrderController extends GetxController {
   var isLoading = false.obs;
 
   // --- MODUL 5 FEATURES ---
-  var useHighAccuracy = true.obs; // Toggle: True = GPS, False = Network
+  var useHighAccuracy = true.obs; 
 
   // --- PILIHAN USER ---
   var selectedService = "".obs;
