@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dashboard_controller.dart';
-import '../order/order_view.dart'; // Halaman Booking/Map
+import '../order/order_view.dart'; 
 import '../chat/chat_view.dart';
 import '../profile/profile_view.dart';
+import 'views/all_services_view.dart'; 
 
 class DashboardView extends GetView<DashboardController> {
   const DashboardView({super.key});
@@ -16,10 +17,10 @@ Widget build(BuildContext context) {
       body: Obx(() => IndexedStack(
         index: controller.tabIndex.value,
         children: [
-          _buildHomeView(),    // Index 0: Home
-          OrderView(),         // Index 1: Booking
-          ChatView(),          // Index 2: Chat
-          const ProfileView(), // Index 3: Profile (Panggil Class Baru)
+          _buildHomeView(),    
+          OrderView(),         
+          ChatView(),          
+          const ProfileView(), 
         ],
       )),
       
@@ -202,7 +203,20 @@ Widget build(BuildContext context) {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(title, style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
-        Text("See all", style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey, decoration: TextDecoration.underline)),
+        GestureDetector(
+          onTap: () {
+            Get.to(() => const AllServicesView()); 
+          },
+          child: Text(
+            "See all", 
+            style: GoogleFonts.poppins(
+              fontSize: 12, 
+              color: Colors.grey, 
+              decoration: TextDecoration.underline
+            )
+          ),
+        ),
+        // -----------------------------
       ],
     );
   }
