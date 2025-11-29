@@ -15,12 +15,10 @@ class TestLocationController extends GetxController {
   var speedDisplay = "-".obs;
   var timestampDisplay = "-".obs;
   
-  // --- STATE MAP ---
   var currentPosition = LatLng(-7.9213, 112.5996).obs;
-  var currentZoom = 15.0.obs; // Level zoom
+  var currentZoom = 15.0.obs; 
   var markers = <Marker>[].obs;
   
-  // --- CONFIG ---
   var useHighAccuracy = true.obs;
   var isLiveTracking = false.obs;
   StreamSubscription<Position>? positionStream;
@@ -37,7 +35,6 @@ class TestLocationController extends GetxController {
     super.onClose();
   }
 
-  // --- FUNGSI ZOOM (BARU) ---
   void zoomIn() {
     if (currentZoom.value < 18) {
       currentZoom.value++;
@@ -52,7 +49,6 @@ class TestLocationController extends GetxController {
     }
   }
 
-  // --- UPDATE UI ---
   void _updateData(Position position) {
     currentPosition.value = LatLng(position.latitude, position.longitude);
     
@@ -75,7 +71,6 @@ class TestLocationController extends GetxController {
     mapController.move(currentPosition.value, currentZoom.value);
   }
 
-  // 1. STATIS (Update Lokasi Sekarang)
   Future<void> getSingleLocation() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) return;
@@ -96,8 +91,7 @@ class TestLocationController extends GetxController {
     Get.snackbar("Lokasi Diupdate", "Posisi terkini berhasil diambil.", 
       snackPosition: SnackPosition.TOP, duration: Duration(seconds: 1), backgroundColor: Colors.white);
   }
-
-  // 2. DINAMIS (Live Stream)
+  
   void toggleLiveTracking() {
     if (isLiveTracking.value) {
       stopLiveTracking();
