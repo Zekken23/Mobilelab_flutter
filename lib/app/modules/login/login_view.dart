@@ -1,7 +1,9 @@
+import 'package:demo5/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart'; 
 import 'login_controller.dart';
+
 
 class LoginView extends GetView<LoginController> {
   const LoginView({super.key});
@@ -193,10 +195,9 @@ class LoginView extends GetView<LoginController> {
                       "Don't have an account? ",
                       style: GoogleFonts.poppins(color: Colors.black54),
                     ),
-                    GestureDetector(
+                   GestureDetector(
                       onTap: () {
-                        // Tambahkan navigasi ke Register jika ada
-                        Get.snackbar("Info", "Fitur Register belum dibuat");
+                        Get.toNamed(Routes.REGISTER);
                       },
                       child: Text(
                         "Create Account",

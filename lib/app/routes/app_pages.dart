@@ -7,7 +7,7 @@ import '../modules/dashboard/dashboard_view.dart';
 import '../modules/dashboard/dashboard_binding.dart';
 import '../modules/order/order_view.dart';
 import '../modules/order/order_binding.dart';
-
+import '../modules/register/register_view.dart';
 part 'app_routes.dart';
 
 class AppPages {
@@ -18,5 +18,9 @@ class AppPages {
     GetPage(name: _Paths.LOGIN, page: () => LoginView(), binding: LoginBinding()),
     GetPage(name: _Paths.DASHBOARD, page: () => DashboardView(), binding: DashboardBinding()),
     GetPage(name: _Paths.ORDER, page: () => OrderView(), binding: OrderBinding()),
+    GetPage(
+      name: Routes.REGISTER, 
+      page: () => RegisterView(),
+    ),
   ];
 }
