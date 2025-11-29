@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -17,7 +18,7 @@ class OrderController extends GetxController {
   // --- STATE VARIABLES ---
   var currentPosition = LatLng(-7.9213, 112.5996).obs; 
   var currentZoom = 15.0.obs;
-  var addressMap = "Mencari lokasi...".obs; // Ini akan ditampilkan di bawah map
+  var addressMap = "Mencari lokasi...".obs; 
   var markers = <Marker>[].obs;
   var isLoading = false.obs;
 
@@ -51,10 +52,9 @@ class OrderController extends GetxController {
         if (permission == LocationPermission.denied) return;
       }
 
-      // PILIH AKURASI BERDASARKAN MODE (Modul 5)
       LocationAccuracy accuracy = useHighAccuracy.value 
-          ? LocationAccuracy.bestForNavigation // GPS (Akurasi Tinggi)
-          : LocationAccuracy.medium;           // Network (Hemat Baterai/Wifi)
+          ? LocationAccuracy.bestForNavigation // GPS
+          : LocationAccuracy.medium;           // Network
 
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: accuracy,
@@ -62,7 +62,6 @@ class OrderController extends GetxController {
 
       currentPosition.value = LatLng(position.latitude, position.longitude);
       
-      // Update teks koordinat
       String mode = useHighAccuracy.value ? "GPS" : "Network";
       addressMap.value = "Lat: ${position.latitude.toStringAsFixed(5)}, Lng: ${position.longitude.toStringAsFixed(5)} ($mode)";
 
@@ -83,7 +82,7 @@ class OrderController extends GetxController {
     }
   }
 
-  // --- FUNGSI ZOOM CONTROLS ---
+  // --- ZOOM CONTROLS ---
   void zoomIn() {
     if (currentZoom.value < 18) {
       currentZoom.value++;
@@ -98,22 +97,25 @@ class OrderController extends GetxController {
     }
   }
 
-  // --- FUNGSI TOGGLE MODE GPS/NETWORK ---
   void toggleLocationMode() {
     useHighAccuracy.toggle();
-    getCurrentLocation(); // Refresh lokasi dengan mode baru
+    getCurrentLocation();
     Get.snackbar(
       "Mode Berubah", 
       useHighAccuracy.value ? "Mode GPS Diaktifkan" : "Mode Network (Hemat Baterai)",
       snackPosition: SnackPosition.TOP,
       duration: const Duration(seconds: 1),
+      backgroundColor: Colors.black54,
+      colorText: Colors.white
     );
   }
 
-  // --- FUNGSI SUBMIT KE SUPABASE (Sama seperti sebelumnya) ---
+  // --- FUNGSI SUBMIT KE SUPABASE ---
   Future<void> submitOrder() async {
+    // Validasi sederhana
     if (namaC.text.isEmpty || noTelpC.text.isEmpty || selectedService.value.isEmpty) {
-      Get.snackbar("Error", "Mohon lengkapi data", backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar("Error", "Mohon lengkapi Nama, No Telp, dan Pilih Service", 
+        backgroundColor: Colors.red, colorText: Colors.white);
       return;
     }
 
@@ -131,15 +133,22 @@ class OrderController extends GetxController {
         'waktu_jemput': selectedTime.value,
       });
 
-      Get.snackbar("Berhasil", "Pesanan dikirim!", backgroundColor: Colors.green, colorText: Colors.white);
+      // Notifikasi Sukses
+      Get.snackbar("Berhasil", "Pesanan berhasil dikirim!", 
+        backgroundColor: Colors.green, colorText: Colors.white);
+      
+      // Reset Form
       clearForm();
+      
     } catch (e) {
-      Get.snackbar("Gagal", "Error: $e", backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar("Gagal", "Error: $e", 
+        backgroundColor: Colors.red, colorText: Colors.white);
     } finally {
       isLoading.value = false;
     }
   }
 
+  // --- RESET FORM SETELAH SUBMIT ---
   void clearForm() {
     namaC.clear();
     noTelpC.clear();
@@ -149,5 +158,6 @@ class OrderController extends GetxController {
     selectedPickupDate.value = "";
     selectedDeliveryDate.value = "";
     selectedTime.value = "";
+    getCurrentLocation(); // Refresh lokasi
   }
 }
