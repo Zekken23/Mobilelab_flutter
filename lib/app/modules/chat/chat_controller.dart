@@ -18,7 +18,7 @@ class ChatController extends GetxController {
 
   var messages = <ChatMessage>[
     ChatMessage(
-      text: "Halo! Selamat datang di Raja Laundry 👋\n\nAda yang bisa saya bantu?\n\nKetik:\n• 'harga' untuk info harga\n• 'jam buka' untuk jam operasional\n• 'layanan' untuk jenis layanan\n• 'admin' untuk hubungi admin", 
+      text: "Halo! Selamat datang di Raja Laundry 👋\n\nSaya adalah Sebuah Bot yang bisa merespon beberapa pertnyaan anda 😊🙏\n\nAda yang bisa saya bantu?\n\nKetik:\n• 'harga' untuk info harga\n• 'pembayaran' untuk info pembayaran\n• 'lokasi' untuk info lokasi\n• 'jam buka' untuk jam operasional\n• 'layanan' untuk jenis layanan\n• 'admin' untuk hubungi admin\n jika ada pertanyaan khusus anda bisa langsung menghubungi admin dengan ketik 'admin'", 
       isSender: false, 
       time: "09:41"
     ),
@@ -31,7 +31,6 @@ class ChatController extends GetxController {
     super.onClose();
   }
 
-  // ✅ KIRIM PESAN (KEYWORD BASED)
   Future<void> sendMessage() async {
     final text = messageC.text;
     if (text.trim().isEmpty) return;
