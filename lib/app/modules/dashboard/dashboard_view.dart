@@ -6,7 +6,6 @@ import '../order/order_view.dart';
 import '../chat/chat_view.dart';
 import '../profile/profile_view.dart';
 import 'views/all_services_view.dart'; 
-import 'views/test_location_view.dart';
 
 class DashboardView extends GetView<DashboardController> {
   const DashboardView({super.key});
@@ -22,7 +21,6 @@ Widget build(BuildContext context) {
           OrderView(),         
           ChatView(),          
           const ProfileView(), 
-          const TestLocationView(),
         ],
       )),
       
@@ -45,7 +43,6 @@ Widget build(BuildContext context) {
               BottomNavigationBarItem(icon: Icon(Icons.calendar_today_outlined), activeIcon: Icon(Icons.calendar_today), label: 'Booking'),
               BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), label: 'Chat'),
               BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Account'),
-              BottomNavigationBarItem(icon: Icon(Icons.science_outlined), activeIcon: Icon(Icons.science), label: 'Uji M5'),
             ],
          ),
        )),

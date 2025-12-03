@@ -111,17 +111,23 @@ class OrderController extends GetxController {
   }
 
   // --- FUNGSI SUBMIT KE SUPABASE ---
-  Future<void> submitOrder() async {
-    // Validasi sederhana
+ Future<void> submitOrder() async {
     if (namaC.text.isEmpty || noTelpC.text.isEmpty || selectedService.value.isEmpty) {
-      Get.snackbar("Error", "Mohon lengkapi Nama, No Telp, dan Pilih Service", 
-        backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar("Error", "Mohon lengkapi data", backgroundColor: Colors.red, colorText: Colors.white);
+      return;
+    }
+
+    // Ambil User ID dari sesi login saat ini
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) {
+      Get.snackbar("Error", "Sesi habis, silakan login ulang");
       return;
     }
 
     isLoading.value = true;
     try {
       await Supabase.instance.client.from('orders').insert({
+        'user_id': user.id, // <--- TAMBAHAN PENTING
         'nama': namaC.text,
         'no_telp': noTelpC.text,
         'alamat_lengkap': alamatC.text,
@@ -131,23 +137,18 @@ class OrderController extends GetxController {
         'tgl_ambil': selectedPickupDate.value,
         'tgl_antar': selectedDeliveryDate.value,
         'waktu_jemput': selectedTime.value,
+        'status': 'Sedang Dicuci', // Default status awal
       });
 
-      // Notifikasi Sukses
-      Get.snackbar("Berhasil", "Pesanan berhasil dikirim!", 
-        backgroundColor: Colors.green, colorText: Colors.white);
-      
-      // Reset Form
+      Get.snackbar("Berhasil", "Pesanan dikirim!", backgroundColor: Colors.green, colorText: Colors.white);
       clearForm();
-      
     } catch (e) {
-      Get.snackbar("Gagal", "Error: $e", 
-        backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar("Gagal", "Error: $e", backgroundColor: Colors.red, colorText: Colors.white);
     } finally {
       isLoading.value = false;
     }
   }
-
+  
   // --- RESET FORM SETELAH SUBMIT ---
   void clearForm() {
     namaC.clear();

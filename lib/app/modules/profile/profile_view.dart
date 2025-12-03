@@ -8,6 +8,7 @@ class ProfileView extends GetView<ProfileController> {
 
   @override
   Widget build(BuildContext context) {
+    // Inject controller
     Get.put(ProfileController());
 
     return Scaffold(
@@ -36,11 +37,14 @@ class ProfileView extends GetView<ProfileController> {
                           BoxShadow(color: Colors.blue.withOpacity(0.2), blurRadius: 15, spreadRadius: 5)
                         ]
                       ),
+                      // Fallback icon jika gambar tidak ada
                       child: const Icon(Icons.person, size: 60, color: Colors.blueAccent),
                     ),
                     const SizedBox(height: 16),
-                    Text(
-                      "Muhammad Yusron\nAL Ghoni Rizqullah",
+                    
+                    // NAMA USER (DINAMIS DARI DATABASE)
+                    Obx(() => Text(
+                      controller.nama.value, // <--- Menggunakan variabel dari Controller
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: 18,
@@ -48,17 +52,26 @@ class ProfileView extends GetView<ProfileController> {
                         color: Colors.black,
                         height: 1.2,
                       ),
-                    ),
+                    )),
+                    
                     const SizedBox(height: 4),
+                    
+                    // TOMBOL EDIT PROFILE
                     GestureDetector(
-                      onTap: () {},
-                      child: Text(
-                        "Edit Profile",
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          color: const Color(0xFF1E64D8),
-                          fontWeight: FontWeight.w600,
-                          decoration: TextDecoration.underline,
+                      onTap: () => controller.showEditDialog(), // <--- Panggil Dialog Edit
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20)
+                        ),
+                        child: Text(
+                          "Edit Profile",
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: const Color(0xFF1E64D8),
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
@@ -68,32 +81,33 @@ class ProfileView extends GetView<ProfileController> {
               
               const SizedBox(height: 35),
 
-              // 2. BAGIAN EMAIL
+              // 2. BAGIAN EMAIL (READ ONLY)
               Text("Email", style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 15)),
               const SizedBox(height: 8),
-              _buildInfoCard(Icons.email_outlined, "Yusronalghoni@gmail.com"),
+              // Email biasanya tidak bisa diedit sembarangan, jadi kita tampilkan saja
+              Obx(() => _buildInfoCard(Icons.email_outlined, controller.email.value)),
 
               const SizedBox(height: 20),
 
-              // 3. BAGIAN ALAMAT
+              // 3. BAGIAN ALAMAT (DINAMIS)
               Text("Alamat", style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 15)),
               const SizedBox(height: 8),
-              _buildInfoCard(
+              Obx(() => _buildInfoCard(
                 Icons.map_outlined, 
-                "Jalan Tegal gondo No 271, Tegalgondo nggondang, kecamatan Karangploso, kabupaten Malang",
+                controller.alamat.value, // <--- Menggunakan variabel dari Controller
                 isMultiLine: true
-              ),
+              )),
 
               const SizedBox(height: 25),
 
-              // 4. BAGIAN PESANAN SAYA
+              // 4. BAGIAN PESANAN SAYA (TETAP SAMA)
               Text("Pesanan saya", style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16)),
               const Divider(thickness: 1, height: 20),
               _buildOrderStatusCard(),
 
               const SizedBox(height: 40),
               
-              // TOMBOL LOGOUT
+              // TOMBOL LOGOUT (TETAP SAMA)
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
@@ -143,8 +157,9 @@ class ProfileView extends GetView<ProfileController> {
     );
   }
 
-  Widget _buildOrderStatusCard() {
-    return Container(
+ Widget _buildOrderStatusCard() {
+    // Gunakan Obx agar update otomatis
+    return Obx(() => Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -159,16 +174,17 @@ class ProfileView extends GetView<ProfileController> {
             alignment: Alignment.center,
             children: [
               SizedBox(
-                width: 60,
-                height: 60,
+                width: 60, height: 60,
                 child: CircularProgressIndicator(
-                  value: 0.75,
+                  value: controller.progressValue.value, // <--- Value Dinamis
                   backgroundColor: Colors.grey.shade200,
                   color: const Color(0xFF1E64D8),
                   strokeWidth: 6,
                 ),
               ),
-              Text("75%", style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF1E64D8))),
+              // Tampilkan persentase
+              Text("${(controller.progressValue.value * 100).toInt()}%", 
+                  style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF1E64D8))),
             ],
           ),
           const SizedBox(width: 16),
@@ -176,14 +192,18 @@ class ProfileView extends GetView<ProfileController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("sedang diproses", style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
+                // Tampilkan Status Text Dinamis
+                Text(controller.lastOrderStatus.value, 
+                    style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
                 const SizedBox(height: 4),
-                Text("Dapat diambil pada : 19 desember 2025 14:30 WIB.", style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF648DDB))),
+                // Tampilkan Tanggal
+                Text(controller.lastOrderDate.value, 
+                    style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF648DDB))),
               ],
             ),
           )
         ],
       ),
-    );
+    ));
   }
 }
