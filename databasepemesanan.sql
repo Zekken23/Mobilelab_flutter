@@ -11,3 +11,10 @@ create table orders (
   tgl_antar text,
   waktu_jemput text
 );
+
+UPDATE profiles
+SET role = 'admin'
+WHERE email = 'user@admin.gmail.com';
+
+ALTER TABLE orders 
+ADD COLUMN IF NOT EXISTS nama_kurir text;

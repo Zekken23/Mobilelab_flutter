@@ -1,15 +1,18 @@
+import 'dart:io'; // <--- WAJIB ADA: Untuk menangani File gambar
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../routes/app_pages.dart';
 
 class ProfileController extends GetxController {
-  // --- VARIABEL PROFILE ---
+  // --- VARIABEL UI (OBSERVABLE) ---
   var nama = "Loading...".obs;
   var email = "Loading...".obs;
   var alamat = "Loading...".obs;
+  var avatarUrl = "".obs; // URL Foto Profile
   
-  // --- VARIABEL PESANAN (BARU) ---
+  // Variabel untuk Progress Order
   var lastOrderStatus = "Belum ada pesanan".obs;
   var lastOrderDate = "-".obs;
   var progressValue = 0.0.obs; 
@@ -21,16 +24,18 @@ class ProfileController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    fetchProfile();
-    fetchLastOrder(); // <--- Sekarang ini tidak akan error
+    // Panggil fungsi ini begitu halaman dibuka
+    fetchProfileData();
+    fetchLastOrder();
   }
 
-  // --- 1. AMBIL DATA PROFILE ---
-  Future<void> fetchProfile() async {
+  // --- 1. AMBIL DATA PROFILE (TERMASUK FOTO) ---
+  Future<void> fetchProfileData() async {
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) return;
 
     try {
+      // Ambil data dari tabel 'profiles'
       final data = await Supabase.instance.client
           .from('profiles')
           .select()
@@ -38,16 +43,66 @@ class ProfileController extends GetxController {
           .maybeSingle();
 
       if (data != null) {
-        nama.value = data['nama'] ?? "User";
-        alamat.value = data['alamat'] ?? "Belum diisi";
+        nama.value = data['nama'] ?? "User Tanpa Nama";
+        alamat.value = data['alamat'] ?? "Alamat belum diisi";
         email.value = data['email'] ?? user.email ?? "-";
+        
+        // --- KUNCI AGAR FOTO TIDAK HILANG ---
+        // Ambil URL dari database dan masukkan ke variabel
+        avatarUrl.value = data['avatar_url'] ?? ""; 
       }
     } catch (e) {
-      print("Error fetch profile: $e");
+      print("Error mengambil profile: $e");
     }
   }
 
-  // --- 2. AMBIL STATUS PESANAN TERAKHIR (INI YANG SEBELUMNYA HILANG) ---
+  // --- 2. UPLOAD FOTO KE SUPABASE ---
+  Future<void> uploadAvatar() async {
+    final ImagePicker picker = ImagePicker();
+    // Pilih foto dari galeri
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    
+    if (image == null) return; // Batal pilih
+
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+
+    Get.showSnackbar(const GetSnackBar(message: "Mengupload foto...", duration: Duration(seconds: 1)));
+
+    try {
+      final File file = File(image.path);
+      final String fileExt = image.path.split('.').last;
+      // Nama file unik berdasarkan waktu
+      final String fileName = '${user.id}/${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+
+      // 1. Upload ke Storage Bucket 'avatars'
+      await Supabase.instance.client.storage
+          .from('avatars')
+          .upload(fileName, file);
+
+      // 2. Dapatkan URL Publik agar bisa dilihat
+      final String publicUrl = Supabase.instance.client.storage
+          .from('avatars')
+          .getPublicUrl(fileName);
+
+      // 3. SIMPAN URL KE DATABASE (Agar permanen)
+      await Supabase.instance.client.from('profiles').update({
+        'avatar_url': publicUrl
+      }).eq('id', user.id);
+
+      // 4. Update Tampilan Aplikasi
+      avatarUrl.value = publicUrl;
+      
+      Get.snackbar("Sukses", "Foto profil berhasil disimpan!", 
+        backgroundColor: Colors.green, colorText: Colors.white);
+
+    } catch (e) {
+      Get.snackbar("Gagal", "Error upload: $e", 
+        backgroundColor: Colors.red, colorText: Colors.white);
+    }
+  }
+
+  // --- 3. FETCH ORDER TERAKHIR (Fix Error) ---
   Future<void> fetchLastOrder() async {
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) return;
@@ -56,8 +111,8 @@ class ProfileController extends GetxController {
       final response = await Supabase.instance.client
           .from('orders')
           .select()
-          .eq('user_id', user.id) // Filter pesanan milik user ini saja
-          .order('created_at', ascending: false) // Urutkan dari yang terbaru
+          .eq('user_id', user.id)
+          .order('created_at', ascending: false)
           .limit(1)
           .maybeSingle();
 
@@ -65,32 +120,21 @@ class ProfileController extends GetxController {
         String status = response['status'] ?? "Sedang Dicuci";
         lastOrderStatus.value = status;
         
-        // Format tanggal sederhana
         String rawDate = response['created_at'].toString();
-        lastOrderDate.value = "Dibuat: ${rawDate.split('T')[0]}"; // Ambil tanggalnya saja
+        lastOrderDate.value = "Dibuat: ${rawDate.split('T')[0]}";
 
-        // Logic Progress Bar (0.0 sampai 1.0)
-        if (status == "Sedang Dicuci") {
-          progressValue.value = 0.25;
-        } else if (status == "Sedang Dijemur") {
-          progressValue.value = 0.50;
-        } else if (status == "Sedang Disetrika") {
-          progressValue.value = 0.75;
-        } else if (status == "Siap Diambil") {
-          progressValue.value = 1.0;
-        } else {
-          progressValue.value = 0.1; // Default
-        }
-      } else {
-        lastOrderStatus.value = "Belum ada pesanan";
-        progressValue.value = 0.0;
-      }
+        if (status == "Sedang Dicuci") progressValue.value = 0.25;
+        else if (status == "Sedang Dijemur") progressValue.value = 0.50;
+        else if (status == "Sedang Disetrika") progressValue.value = 0.75;
+        else if (status == "Siap Diambil") progressValue.value = 1.0;
+        else progressValue.value = 0.1;
+      } 
     } catch (e) {
-      print("Error fetch order: $e");
+      print("Error order: $e");
     }
   }
 
-  // --- 3. DIALOG EDIT PROFILE ---
+  // --- 4. DIALOG EDIT PROFILE ---
   void showEditDialog() {
     editNamaC.text = nama.value;
     editAlamatC.text = alamat.value;
@@ -102,13 +146,13 @@ class ProfileController extends GetxController {
         children: [
           TextField(
             controller: editNamaC,
-            decoration: const InputDecoration(labelText: "Nama", border: OutlineInputBorder()),
+            decoration: const InputDecoration(labelText: "Nama Lengkap", border: OutlineInputBorder()),
           ),
           const SizedBox(height: 15),
           TextField(
             controller: editAlamatC,
             maxLines: 3,
-            decoration: const InputDecoration(labelText: "Alamat", border: OutlineInputBorder()),
+            decoration: const InputDecoration(labelText: "Alamat Lengkap", border: OutlineInputBorder()),
           ),
         ],
       ),
@@ -123,7 +167,7 @@ class ProfileController extends GetxController {
     );
   }
 
-  // --- 4. UPDATE DATA KE SUPABASE ---
+  // --- 5. UPDATE DATA NAMA & ALAMAT ---
   Future<void> updateProfile() async {
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) return;
@@ -137,19 +181,21 @@ class ProfileController extends GetxController {
       nama.value = editNamaC.text;
       alamat.value = editAlamatC.text;
 
-      Get.snackbar("Sukses", "Profile diperbarui", backgroundColor: Colors.green, colorText: Colors.white);
+      Get.snackbar("Berhasil", "Data profil diperbarui!", backgroundColor: Colors.green, colorText: Colors.white);
     } catch (e) {
       Get.snackbar("Gagal", "Error: $e", backgroundColor: Colors.red, colorText: Colors.white);
     }
   }
 
-  // --- 5. LOGOUT ---
+  // --- 6. LOGOUT ---
   Future<void> logout() async {
     Get.defaultDialog(
       title: "Logout",
       middleText: "Yakin ingin keluar?",
       textConfirm: "Ya",
       textCancel: "Batal",
+      confirmTextColor: Colors.white,
+      buttonColor: Colors.red,
       onConfirm: () async {
         await Supabase.instance.client.auth.signOut();
         Get.offAllNamed(Routes.LOGIN);

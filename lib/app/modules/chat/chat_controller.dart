@@ -140,7 +140,7 @@ class ChatController extends GetxController {
     }
 
     // === SALAM / GREETING ===
-    if (_containsAny(msg, ['halo', 'hai', 'hello', 'hi', 'assalamualaikum', 'pagi', 'siang', 'sore', 'malam'])) {
+    if (_containsAny(msg, ['halo', 'hai', 'hello', 'hi', 'assalamualaikum', 'pagi', 'siang', 'sore', 'malam', ' p', 's', 'm', 'tes', 'test', 'cek'])) {
       final greetings = [
         "Halo Kak! 😊 Senang bisa bantu. Ada yang ingin ditanyakan?",
         "Hai Kak! 👋 Ada yang bisa dibantu hari ini?",

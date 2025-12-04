@@ -3,8 +3,10 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'chat_controller.dart';
 
+// Hapus import profile karena tidak dipakai untuk foto
+// import '../profile/profile_controller.dart'; 
+
 class ChatView extends StatelessWidget {
-  // Karena kita panggil manual di Dashboard, kita inject controller di sini jika belum ada
   final ChatController controller = Get.put(ChatController());
 
   ChatView({super.key});
@@ -12,49 +14,53 @@ class ChatView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Ubah background scaffold jadi putih bersih, karena area chat sudah punya BG sendiri nanti
-      backgroundColor: Colors.white, 
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        automaticallyImplyLeading: false, // Hilangkan back button default
+        automaticallyImplyLeading: false, 
         title: Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(colors: [Color(0xFF2E3192), Color(0xFF1BFFFF)]), // Gradasi Biru
+            gradient: const LinearGradient(colors: [Color(0xFF2E3192), Color(0xFF1BFFFF)]), 
             borderRadius: BorderRadius.circular(30),
           ),
-          child: Text(
-            "Customer Service",
-            style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.smart_toy, color: Colors.white, size: 20), // Icon Bot
+              const SizedBox(width: 8),
+              Text(
+                "Raja Bot Assistant", // Ganti Nama agar user tau ini bot
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ],
           ),
         ),
       ),
       body: Column(
         children: [
-          // --- AREA CHAT DENGAN BACKGROUND ---
+          // --- AREA CHAT (LIST PESAN) ---
           Expanded(
-            // Kita gunakan STACK di sini untuk menumpuk Background dan ListView
             child: Stack(
-              fit: StackFit.expand, // Agar children memenuhi area Expanded
               children: [
-                // LAYER 1: Gambar Background (Paling Belakang)
-                Image.asset(
-                  'assets/chatbackground.png', // Pastikan nama file sesuai
-                  fit: BoxFit.cover, // Agar gambar memenuhi area tanpa distorsi
+                // Background Image
+                Container(
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage('assets/chatbackground.png'), 
+                      fit: BoxFit.cover,
+                      opacity: 0.3, // Biar tidak terlalu nabrak text
+                    ),
+                  ),
                 ),
                 
-                // OPSIONAL: Overlay Transparan (Jika gambar terlalu terang/ramai agar chat terbaca)
-                // Container(
-                //   color: Colors.white.withOpacity(0.6), 
-                // ),
-
-                // LAYER 2: Daftar Pesan Chat (Di Depan Background)
+                // List Pesan
                 Obx(() => ListView.builder(
                   controller: controller.scrollC,
                   padding: const EdgeInsets.all(20),
@@ -64,11 +70,33 @@ class ChatView extends StatelessWidget {
                     return _buildChatBubble(msg);
                   },
                 )),
+
+                // Loading Indicator (Typing effect)
+                Obx(() {
+                  if (controller.isLoading.value) {
+                    return Positioned(
+                      bottom: 10, left: 20,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)]
+                        ),
+                        child: Text(
+                          "Bot sedang mengetik...", 
+                          style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey, fontStyle: FontStyle.italic)
+                        ),
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                }),
               ],
             ),
           ),
 
-          // --- AREA INPUT (Tetap solid putih di bawah) ---
+          // --- AREA INPUT (TANPA KAMERA) ---
           _buildInputArea(),
         ],
       ),
@@ -82,43 +110,64 @@ class ChatView extends StatelessWidget {
         mainAxisAlignment: msg.isSender ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // Logo Admin (Kiri)
+          // Icon Bot (Kiri)
           if (!msg.isSender)
             Padding(
               padding: const EdgeInsets.only(right: 10),
-              child: Image.asset('assets/logorajalaundry.png', width: 30, height: 30), 
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: const BoxDecoration(color: Colors.blueAccent, shape: BoxShape.circle),
+                child: const Icon(Icons.smart_toy, color: Colors.white, size: 20),
+              ),
             ),
 
-          // BUBBLE
+          // BUBBLE CHAT
           Flexible(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                // Saya ubah sedikit opacitynya agar sedikit lebih solid di atas background
-                color: const Color(0xFF8C9EFF).withOpacity(0.9), 
+                color: msg.isSender 
+                    ? const Color(0xFF2E3192) // Warna User (Biru Tua)
+                    : const Color(0xFFF0F2F5), // Warna Bot (Abu Muda)
                 borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(12),
-                  topRight: const Radius.circular(12),
-                  bottomLeft: Radius.circular(msg.isSender ? 12 : 0), 
-                  bottomRight: Radius.circular(msg.isSender ? 0 : 12),
+                  topLeft: const Radius.circular(16),
+                  topRight: const Radius.circular(16),
+                  bottomLeft: Radius.circular(msg.isSender ? 16 : 0), 
+                  bottomRight: Radius.circular(msg.isSender ? 0 : 16),
                 ),
+                boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 2, offset: Offset(0, 1))]
               ),
-              child: Text(
-                msg.text,
-                style: GoogleFonts.poppins(color: Colors.white, fontSize: 13),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    msg.text,
+                    style: GoogleFonts.poppins(
+                      color: msg.isSender ? Colors.white : Colors.black87, 
+                      fontSize: 13
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    msg.time,
+                    style: GoogleFonts.poppins(
+                      color: msg.isSender ? Colors.white70 : Colors.black38, 
+                      fontSize: 10
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
 
-          // Avatar User (Kanan)
+          // Icon User (Kanan)
           if (msg.isSender)
-            Padding(
-              padding: const EdgeInsets.only(left: 10),
-              child: const CircleAvatar(
-                radius: 15,
-                // Pastikan aset ini ada atau ganti dengan Icon sementara jika error
-                backgroundImage: AssetImage('assets/logorajalaundry.png'), 
-                // child: Icon(Icons.person, size: 15), // Gunakan ini jika belum ada gambar
+            const Padding(
+              padding: EdgeInsets.only(left: 10),
+              child: CircleAvatar(
+                radius: 18,
+                backgroundColor: Colors.grey,
+                child: Icon(Icons.person, color: Colors.white, size: 20),
               ),
             ),
         ],
@@ -127,44 +176,49 @@ class ChatView extends StatelessWidget {
   }
 
   Widget _buildInputArea() {
-    // Container ini akan tetap berlatar putih solid
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: const BoxDecoration(
         color: Colors.white,
-        // Opsional: Tambah shadow sedikit di atas area input biar misah sama chat area
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 2, offset: Offset(0, -1))]
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, -2))]
       ),
       child: SafeArea(
         child: Row(
           children: [
-            // Icon Gallery & Camera
-            IconButton(icon: const Icon(Icons.image_outlined, color: Colors.black87), onPressed: () {}),
-            IconButton(icon: const Icon(Icons.camera_alt_outlined, color: Colors.black87), onPressed: () {}),
-            
-            const SizedBox(width: 8),
-
-            // Text Field
+            // TextField
             Expanded(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
+                  color: Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(30),
+                  border: Border.all(color: Colors.grey.shade300),
                 ),
                 child: TextField(
                   controller: controller.messageC,
+                  textCapitalization: TextCapitalization.sentences,
                   decoration: InputDecoration(
-                    hintText: "Kirim Pesan",
+                    hintText: "Tanya sesuatu...",
                     hintStyle: GoogleFonts.poppins(color: Colors.grey),
                     border: InputBorder.none,
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.send, color: Colors.black87),
-                      onPressed: () => controller.sendMessage(),
-                    ),
                   ),
                   onSubmitted: (_) => controller.sendMessage(),
                 ),
+              ),
+            ),
+            
+            const SizedBox(width: 12),
+
+            // Tombol Kirim
+            GestureDetector(
+              onTap: () => controller.sendMessage(),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: const BoxDecoration(
+                  color: Color(0xFF2E3192), 
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.send_rounded, color: Colors.white, size: 24),
               ),
             ),
           ],

@@ -8,7 +8,7 @@ class ProfileView extends GetView<ProfileController> {
 
   @override
   Widget build(BuildContext context) {
-    // Inject controller
+    // Inject Controller agar siap digunakan saat halaman dibuka
     Get.put(ProfileController());
 
     return Scaffold(
@@ -19,32 +19,58 @@ class ProfileView extends GetView<ProfileController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. HEADER PROFILE (Foto & Nama)
+              // --- 1. HEADER PROFILE (FOTO & NAMA) ---
               Center(
                 child: Column(
                   children: [
-                    Container(
-                      width: 110,
-                      height: 110,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.blue.shade50,
-                        image: const DecorationImage(
-                          image: AssetImage('assets/profile_placeholder.png'),
-                          fit: BoxFit.cover,
-                        ),
-                        boxShadow: [
-                          BoxShadow(color: Colors.blue.withOpacity(0.2), blurRadius: 15, spreadRadius: 5)
-                        ]
-                      ),
-                      // Fallback icon jika gambar tidak ada
-                      child: const Icon(Icons.person, size: 60, color: Colors.blueAccent),
+                    // AVATAR DENGAN FUNGSI UPLOAD
+                    GestureDetector(
+                      onTap: () => controller.uploadAvatar(),
+                      child: Obx(() {
+                        bool hasImage = controller.avatarUrl.value.isNotEmpty;
+                        return Container(
+                          width: 110,
+                          height: 110,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.blue.shade50,
+                            image: DecorationImage(
+                              image: hasImage
+                                  ? NetworkImage(controller.avatarUrl.value) as ImageProvider
+                                  : const AssetImage('assets/profile1.jpg'),
+                              fit: BoxFit.cover,
+                            ),
+                            boxShadow: [
+                              BoxShadow(color: Colors.blue.withOpacity(0.2), blurRadius: 15, spreadRadius: 5)
+                            ],
+                          ),
+                          child: Stack(
+                            children: [
+                              // Icon Kamera kecil di pojok kanan bawah
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: Colors.grey.shade200),
+                                  ),
+                                  child: const Icon(Icons.camera_alt, size: 18, color: Colors.blueAccent),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
                     ),
+                    
                     const SizedBox(height: 16),
                     
-                    // NAMA USER (DINAMIS DARI DATABASE)
+                    // NAMA USER (DINAMIS DARI CONTROLLER)
                     Obx(() => Text(
-                      controller.nama.value, // <--- Menggunakan variabel dari Controller
+                      controller.nama.value,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: 18,
@@ -54,24 +80,18 @@ class ProfileView extends GetView<ProfileController> {
                       ),
                     )),
                     
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 8),
                     
                     // TOMBOL EDIT PROFILE
                     GestureDetector(
-                      onTap: () => controller.showEditDialog(), // <--- Panggil Dialog Edit
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20)
-                        ),
-                        child: Text(
-                          "Edit Profile",
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: const Color(0xFF1E64D8),
-                            fontWeight: FontWeight.w600,
-                          ),
+                      onTap: () => controller.showEditDialog(),
+                      child: Text(
+                        "Edit Profile",
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: const Color(0xFF1E64D8),
+                          fontWeight: FontWeight.w600,
+                          decoration: TextDecoration.underline,
                         ),
                       ),
                     ),
@@ -81,33 +101,32 @@ class ProfileView extends GetView<ProfileController> {
               
               const SizedBox(height: 35),
 
-              // 2. BAGIAN EMAIL (READ ONLY)
+              // --- 2. BAGIAN EMAIL (READ ONLY) ---
               Text("Email", style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 15)),
               const SizedBox(height: 8),
-              // Email biasanya tidak bisa diedit sembarangan, jadi kita tampilkan saja
               Obx(() => _buildInfoCard(Icons.email_outlined, controller.email.value)),
 
               const SizedBox(height: 20),
 
-              // 3. BAGIAN ALAMAT (DINAMIS)
+              // --- 3. BAGIAN ALAMAT (DINAMIS) ---
               Text("Alamat", style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 15)),
               const SizedBox(height: 8),
               Obx(() => _buildInfoCard(
                 Icons.map_outlined, 
-                controller.alamat.value, // <--- Menggunakan variabel dari Controller
+                controller.alamat.value, 
                 isMultiLine: true
               )),
 
               const SizedBox(height: 25),
 
-              // 4. BAGIAN PESANAN SAYA (TETAP SAMA)
+              // --- 4. STATUS PESANAN (PROGRESS BAR) ---
               Text("Pesanan saya", style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16)),
               const Divider(thickness: 1, height: 20),
               _buildOrderStatusCard(),
 
               const SizedBox(height: 40),
               
-              // TOMBOL LOGOUT (TETAP SAMA)
+              // --- 5. TOMBOL LOGOUT ---
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
@@ -128,8 +147,7 @@ class ProfileView extends GetView<ProfileController> {
     );
   }
 
-  // --- WIDGET PENDUKUNG ---
-
+  // --- WIDGET HELPER: KOTAK INFO ---
   Widget _buildInfoCard(IconData icon, String text, {bool isMultiLine = false}) {
     return Container(
       width: double.infinity,
@@ -147,7 +165,11 @@ class ProfileView extends GetView<ProfileController> {
           Expanded(
             child: Text(
               text,
-              style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black),
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Colors.black,
+              ),
               maxLines: isMultiLine ? 3 : 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -157,53 +179,92 @@ class ProfileView extends GetView<ProfileController> {
     );
   }
 
- Widget _buildOrderStatusCard() {
-    // Gunakan Obx agar update otomatis
-    return Obx(() => Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 5))
-        ],
-      ),
-      child: Row(
-        children: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              SizedBox(
-                width: 60, height: 60,
-                child: CircularProgressIndicator(
-                  value: controller.progressValue.value, // <--- Value Dinamis
-                  backgroundColor: Colors.grey.shade200,
-                  color: const Color(0xFF1E64D8),
-                  strokeWidth: 6,
-                ),
-              ),
-              // Tampilkan persentase
-              Text("${(controller.progressValue.value * 100).toInt()}%", 
-                  style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF1E64D8))),
-            ],
+  // --- WIDGET HELPER: KARTU STATUS ORDER ---
+  Widget _buildOrderStatusCard() {
+    return Obx(() {
+      // Jika tidak ada pesanan, tampilkan info kosong
+      if (controller.lastOrderStatus.value == "Belum ada pesanan") {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade200),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          child: Center(
+            child: Text(
+              "Belum ada pesanan aktif",
+              style: GoogleFonts.poppins(color: Colors.grey),
+            ),
+          ),
+        );
+      }
+
+      // Jika ada pesanan, tampilkan progress
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 5))
+          ],
+        ),
+        child: Row(
+          children: [
+            // Circular Indicator
+            Stack(
+              alignment: Alignment.center,
               children: [
-                // Tampilkan Status Text Dinamis
-                Text(controller.lastOrderStatus.value, 
-                    style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
-                const SizedBox(height: 4),
-                // Tampilkan Tanggal
-                Text(controller.lastOrderDate.value, 
-                    style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF648DDB))),
+                SizedBox(
+                  width: 60,
+                  height: 60,
+                  child: CircularProgressIndicator(
+                    value: controller.progressValue.value, 
+                    backgroundColor: Colors.grey.shade200,
+                    color: const Color(0xFF1E64D8),
+                    strokeWidth: 6,
+                  ),
+                ),
+                Text(
+                  "${(controller.progressValue.value * 100).toInt()}%",
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF1E64D8),
+                  ),
+                ),
               ],
             ),
-          )
-        ],
-      ),
-    ));
+            const SizedBox(width: 16),
+            // Teks Status & Tanggal
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    controller.lastOrderStatus.value,
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    controller.lastOrderDate.value,
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: const Color(0xFF648DDB),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
+      );
+    });
   }
 }

@@ -1,4 +1,4 @@
-import 'dart:ui'; // Diperlukan untuk ImageFilter (Blur)
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -8,16 +8,18 @@ class AllServicesView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Daftar Layanan (Label & Icon)
-    // Nanti Anda bisa ganti IconData dengan Image.asset jika punya gambar PNG-nya
-    final List<Map<String, dynamic>> services = [
-      {"name": "Cuci Basah", "icon": Icons.local_laundry_service, "color": Colors.blue.shade100},
-      {"name": "Cuci Kering", "icon": Icons.dry_cleaning, "color": Colors.orange.shade100},
-      {"name": "Setrika Wangi", "icon": Icons.iron, "color": Colors.purple.shade100},
-      {"name": "Cuci Sepatu", "icon": Icons.roller_skating, "color": Colors.yellow.shade100}, // Ganti aset sepatu
-      {"name": "Cuci Tas", "icon": Icons.shopping_bag, "color": Colors.brown.shade100},       // Ganti aset tas
-      {"name": "Cuci Helm", "icon": Icons.two_wheeler, "color": Colors.grey.shade300},        // Ganti aset helm
-      {"name": "Cuci Spray", "icon": Icons.bed, "color": Colors.pink.shade100},               // Ganti aset kasur/spray
+    // DAFTAR LAYANAN LENGKAP (Pastikan nama file di folder assets/ sesuai)
+    final List<Map<String, String>> services = [
+      {"name": "Cuci Basah", "image": "assets/cucibasah.png"},
+      {"name": "Cuci Kering", "image": "assets/cucikering.png"},
+      {"name": "Setrika Wangi", "image": "assets/setrika.png"},
+      {"name": "Cuci Sepatu", "image": "assets/sepatu.png"},
+      {"name": "Cuci Tas", "image": "assets/tas.png"},
+      {"name": "Cuci Helm", "image": "assets/helm.png"},
+      {"name": "Cuci Spray", "image": "assets/spray.png"},
+      {"name": "Cuci Boneka", "image": "assets/boneka.png"},
+      {"name": "Cuci Jas/Gaun", "image": "assets/dress.png"},
+      {"name": "Cuci Kiloan", "image": "assets/cucibasah.png"},
     ];
 
     return Scaffold(
@@ -32,27 +34,27 @@ class AllServicesView extends StatelessWidget {
       ),
       body: Stack(
         children: [
-          // 1. BACKGROUND IMAGE (Menggunakan background yang sudah ada)
+          // 1. BACKGROUND IMAGE
           Container(
             width: double.infinity,
             height: double.infinity,
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/pemesananbackground.png'), // Gunakan background yang ada
+                image: AssetImage('assets/seeallbackground.png'),
                 fit: BoxFit.cover,
               ),
             ),
           ),
 
-          // 2. EFEK BLUR (FROSTED GLASS)
+          // 2. EFEK BLUR (Opsional, agar text lebih terbaca)
           BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0), // Kekuatan blur
+            filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
             child: Container(
-              color: Colors.white.withOpacity(0.6), // Lapisan putih transparan
+              color: Colors.white.withOpacity(0.5), // Putih transparan
             ),
           ),
 
-          // 3. KONTEN UTAMA
+          // 3. KONTEN GRID
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -81,7 +83,6 @@ class AllServicesView extends StatelessWidget {
 
                   const SizedBox(height: 20),
 
-                  // JUDUL
                   Text(
                     "Services",
                     style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
@@ -89,21 +90,20 @@ class AllServicesView extends StatelessWidget {
 
                   const SizedBox(height: 20),
 
-                  // GRID LAYANAN
+                  // GRID MENU
                   Expanded(
                     child: GridView.builder(
                       itemCount: services.length,
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3, // 3 Kolom ke samping
+                        crossAxisCount: 3, // 3 Kolom
                         crossAxisSpacing: 15,
                         mainAxisSpacing: 20,
-                        childAspectRatio: 0.8, // Mengatur tinggi kotak agar pas
+                        childAspectRatio: 0.85,
                       ),
                       itemBuilder: (context, index) {
                         return _buildServiceItem(
-                          services[index]['name'],
-                          services[index]['icon'],
-                          services[index]['color'],
+                          services[index]['name']!,
+                          services[index]['image']!,
                         );
                       },
                     ),
@@ -117,13 +117,14 @@ class AllServicesView extends StatelessWidget {
     );
   }
 
-  Widget _buildServiceItem(String title, IconData icon, Color bgColor) {
+  Widget _buildServiceItem(String title, String assetPath) {
     return Column(
       children: [
-        // Kotak Icon
+        // KOTAK ICON PUTIH
         Container(
           width: 80,
           height: 80,
+          padding: const EdgeInsets.all(18), // Padding agar icon tidak terlalu besar
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
@@ -136,15 +137,14 @@ class AllServicesView extends StatelessWidget {
               )
             ],
           ),
-          child: Center(
-            // Ganti Icon ini dengan Image.asset jika ingin pakai gambar ilustrasi
-            child: Icon(icon, size: 40, color: Colors.black87), 
-            // Contoh pakai gambar:
-            // child: Image.asset('assets/icon_$title.png', width: 40),
+          child: Image.asset(
+            assetPath,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, size: 30, color: Colors.grey),
           ),
         ),
         const SizedBox(height: 10),
-        // Teks Label
+        // TEXT TITLE
         Text(
           title,
           textAlign: TextAlign.center,

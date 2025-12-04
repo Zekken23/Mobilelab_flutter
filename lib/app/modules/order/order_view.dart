@@ -10,58 +10,73 @@ class OrderView extends GetView<OrderController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      extendBodyBehindAppBar: true, // Agar background menyatu sampai atas
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
           "Pemesanan Laundry",
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
         ),
         centerTitle: true,
-        backgroundColor: Colors.cyanAccent.shade100.withOpacity(0.5),
+        // Gradient Header Biru (Dipertahankan)
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF2E3192), Color(0xFF1BFFFF)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Get.back(),
         ),
       ),
+      
+      // --- MODIFIKASI DIMULAI DARI SINI (STACK) ---
       body: Stack(
         children: [
-          // BACKGROUND IMAGE
+          // 1. BACKGROUND IMAGE
           Container(
             height: double.infinity,
             width: double.infinity,
             decoration: const BoxDecoration(
               image: DecorationImage(
+                // Ganti dengan nama file background Anda
                 image: AssetImage("assets/pemesananbackground.png"), 
                 fit: BoxFit.cover,
               ),
             ),
-            child: Container(color: Colors.white.withOpacity(0.3)),
+            // Tambahan: Lapisan putih transparan agar teks tetap mudah dibaca
+            child: Container(
+              color: Colors.white.withOpacity(0.85), 
+            ),
           ),
 
+          // 2. KONTEN ASLI (SingleChildScrollView)
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 1. INPUT FORM
+                  // 1. FORM INPUT
                   _buildTextField("Nama", controller.namaC),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   _buildTextField("No Telp", controller.noTelpC, isNumber: true),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   _buildTextField("Alamat Lengkap", controller.alamatC),
 
                   const SizedBox(height: 20),
 
-                  // 2. PETA (MAP) DENGAN ZOOM & MODE TOGGLE
+                  // 2. PETA
                   Container(
-                    height: 250, 
+                    height: 150, 
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(15),
                       border: Border.all(color: Colors.grey.shade300),
-                      color: Colors.white, 
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(15),
@@ -72,6 +87,9 @@ class OrderView extends GetView<OrderController> {
                             options: MapOptions(
                               initialCenter: controller.currentPosition.value,
                               initialZoom: controller.currentZoom.value,
+                              onTap: (tapPosition, point) {
+                                controller.onMapTap(tapPosition, point);
+                              },
                             ),
                             children: [
                               TileLayer(
@@ -81,115 +99,98 @@ class OrderView extends GetView<OrderController> {
                               MarkerLayer(markers: controller.markers.toList()),
                             ],
                           )),
-                          
-                          // TOMBOL KONTROL (Kanan Bawah)
+                          // Tombol Refresh Kecil
                           Positioned(
-                            bottom: 10,
-                            right: 10,
-                            child: Column(
-                              children: [
-                                // Toggle Mode GPS/Network
-                                Obx(() => _mapButton(
-                                  controller.useHighAccuracy.value ? Icons.gps_fixed : Icons.wifi, 
-                                  controller.toggleLocationMode,
-                                  color: controller.useHighAccuracy.value ? Colors.blue : Colors.orange,
-                                )),
-                                const SizedBox(height: 8),
-                                // Zoom In
-                                _mapButton(Icons.add, controller.zoomIn),
-                                const SizedBox(height: 8),
-                                // Zoom Out
-                                _mapButton(Icons.remove, controller.zoomOut),
-                                const SizedBox(height: 8),
-                                // Refresh Lokasi
-                                _mapButton(Icons.my_location, controller.getCurrentLocation),
-                              ],
+                            bottom: 8, right: 8,
+                            child: InkWell(
+                              onTap: controller.getCurrentLocation,
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                                child: const Icon(Icons.my_location, size: 20, color: Colors.blue),
+                              ),
                             ),
-                          )
+                          ),
                         ],
                       ),
                     ),
                   ),
-                  
-                  // KOORDINAT TEXT
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0, left: 4),
-                    child: Obx(() => Text(
-                      "Koordinat: ${controller.addressMap.value}",
-                      style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey.shade700),
-                    )),
+
+                  const SizedBox(height: 25),
+
+                  // 3. PILIH SERVICE 
+                  _buildSectionTitle("Pilih Service", suffix: "Lainnya"),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildServiceCard("Cuci Basah", 'assets/cucibasah.png'),
+                      _buildServiceCard("Cuci Kering", 'assets/cucikering.png'),
+                      _buildServiceCard("Setrika Wangi", 'assets/setrika.png'),
+                    ],
                   ),
 
                   const SizedBox(height: 25),
 
-                  // 3. PILIH SERVICE
-                  _buildSectionTitle("Pilih Service"),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildServiceCard("Cuci Basah", Icons.local_laundry_service),
-                      _buildServiceCard("Cuci Kering", Icons.dry_cleaning),
-                      _buildServiceCard("Setrika Wangi", Icons.iron),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // 4. LIST PAKAIAN
-                  _buildSectionTitle("Note pakaian yang akan di laundry"),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: controller.itemsC,
-                    maxLines: 3,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white.withOpacity(0.8),
-                      hintText: "Contoh:\n- 2 Kemeja putih",
-                      hintStyle: GoogleFonts.poppins(color: Colors.grey.shade400, fontSize: 13),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.blue)),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.blue.shade200)),
+                  // 4. NOTE PAKAIAN
+                  _buildSectionTitle("Note pakaian"),
+                  const SizedBox(height: 12),
+                  Container(
+                    height: 120, 
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.blue), 
+                    ),
+                    child: TextField(
+                      controller: controller.noteC,
+                      maxLines: 5,
+                      decoration: InputDecoration(
+                        hintText: "putih dipisah, yang hitam gampang luntur",
+                        hintStyle: GoogleFonts.poppins(color: Colors.grey.shade400, fontSize: 13),
+                        border: InputBorder.none,
+                      ),
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 25),
 
-                  // 5. TANGGAL PICKUP
-                  _buildSectionTitle("Pilih Hari Diambil (Pickup)"),
-                  const SizedBox(height: 10),
+                  // 5. PILIH HARI DIAMBIL (PICKUP)
+                  _buildSectionTitle("Pilih Hari Diambil"),
+                  const SizedBox(height: 12),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        _buildDateChip("Today", "Hari Ini", isPickup: true),
-                        _buildDateChip("Tomorrow", "Besok", isPickup: true),
-                        _buildDateChip("Lusa", "Lusa", isPickup: true),
+                        _buildChip("Today", "Hari Ini", isPickup: true),
+                        _buildChip("Tomorrow", "Besok", isPickup: true),
                       ],
                     ),
                   ),
 
-                  const SizedBox(height: 15),
+                  const SizedBox(height: 20),
 
-                  // 6. TANGGAL DELIVERY
-                  _buildSectionTitle("Pilih Tanggal Diantar (Delivery)"),
-                  const SizedBox(height: 10),
+                  // 6. PILIH TANGGAL DIANTAR (DELIVERY)
+                  _buildSectionTitle("Pilih Tanggal Diantar"),
+                  const SizedBox(height: 12),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        _buildDateChip("Tomorrow", "Besok", isPickup: false),
-                        _buildDateChip("Lusa", "Lusa", isPickup: false),
-                        _buildDateChip("Nanti", "3 Hari Lagi", isPickup: false),
+                        _buildChip("Ambil sendiri", "Ambil Sendiri", isPickup: false),
+                        _buildChip("hari ini", "Hari Ini", isPickup: false),
+                        _buildChip("Besok", "Besok", isPickup: false),
+                        _buildChip("lusa", "Lusa", isPickup: false),
                       ],
                     ),
                   ),
 
-                  const SizedBox(height: 15),
+                  const SizedBox(height: 20),
 
-                  // 7. WAKTU
+                  // 7. PILIH WAKTU
                   _buildSectionTitle("Pilih Waktu"),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
@@ -204,24 +205,29 @@ class OrderView extends GetView<OrderController> {
 
                   const SizedBox(height: 30),
 
-                  // 8. TOMBOL SUBMIT (BUAT PESANAN)
+                  // 8. TOMBOL BUAT PESANAN
                   SizedBox(
                     width: double.infinity,
                     height: 55,
                     child: Obx(() => ElevatedButton(
                       onPressed: controller.isLoading.value ? null : controller.submitOrder,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1E64D8),
+                        backgroundColor: const Color(0xFF1E64D8), 
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        elevation: 3,
+                        elevation: 4,
                       ),
-                      child: controller.isLoading.value 
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : Text("Buat Pesanan", style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                      child: controller.isLoading.value
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : Text(
+                              "Buat Pesanan",
+                              style: GoogleFonts.poppins(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
                     )),
                   ),
-                  
-                  // Spacer bawah agar tidak mepet layar
                   const SizedBox(height: 20),
                 ],
               ),
@@ -232,29 +238,48 @@ class OrderView extends GetView<OrderController> {
     );
   }
 
-  // --- WIDGET HELPER UI (Tetap Sama) ---
+  // --- WIDGET HELPER (TETAP DIPERTAHANKAN) ---
 
-  Widget _buildTextField(String label, TextEditingController c, {bool isNumber = false}) {
+  Widget _buildTextField(String hint, TextEditingController c, {bool isNumber = false}) {
     return TextField(
       controller: c,
       keyboardType: isNumber ? TextInputType.phone : TextInputType.text,
       decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: GoogleFonts.poppins(color: Colors.grey.shade400),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.8),
-        labelText: label,
-        labelStyle: GoogleFonts.poppins(color: Colors.grey.shade700),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.blue)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.blue.shade200)),
+        fillColor: Colors.white, // Agar inputan jelas diatas background
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.blue), 
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.blue), 
+        ),
       ),
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Text(title, style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black87));
+  Widget _buildSectionTitle(String title, {String? suffix}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black),
+        ),
+        if (suffix != null)
+          Text(
+            suffix,
+            style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
+          )
+      ],
+    );
   }
 
-  Widget _buildServiceCard(String title, IconData icon) {
+  Widget _buildServiceCard(String title, String assetPath) {
     return Obx(() {
       bool isSelected = controller.selectedService.value == title;
       return GestureDetector(
@@ -263,16 +288,32 @@ class OrderView extends GetView<OrderController> {
           width: 100,
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
-            color: isSelected ? Colors.blue.shade50 : Colors.white.withOpacity(0.9),
-            borderRadius: BorderRadius.circular(15),
-            border: Border.all(color: isSelected ? Colors.blue : Colors.grey.shade300, width: isSelected ? 2 : 1),
-            boxShadow: [if (!isSelected) BoxShadow(color: Colors.grey.shade100, blurRadius: 5)],
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected ? Colors.transparent : Colors.grey.shade200,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.grey.shade100, 
+                blurRadius: 10,
+                spreadRadius: isSelected ? 2 : 1
+              )
+            ],
           ),
           child: Column(
             children: [
-              Icon(icon, size: 35, color: isSelected ? Colors.blue : Colors.grey.shade600),
+              Image.asset(assetPath, width: 40, height: 40, errorBuilder: (c,e,s) => const Icon(Icons.broken_image)),
               const SizedBox(height: 8),
-              Text(title, textAlign: TextAlign.center, style: GoogleFonts.poppins(fontSize: 12, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                ),
+              ),
             ],
           ),
         ),
@@ -280,24 +321,39 @@ class OrderView extends GetView<OrderController> {
     });
   }
 
-  Widget _buildDateChip(String id, String label, {required bool isPickup}) {
+  Widget _buildChip(String label, String value, {required bool isPickup}) {
     return Obx(() {
-      String selected = isPickup ? controller.selectedPickupDate.value : controller.selectedDeliveryDate.value;
-      bool isSelected = selected == label;
+      String selected = isPickup 
+          ? controller.selectedPickupDate.value 
+          : controller.selectedDeliveryDate.value;
+      bool isSelected = selected == value;
+      
       return Padding(
-        padding: const EdgeInsets.only(right: 8.0),
-        child: ChoiceChip(
-          label: Text(label),
-          selected: isSelected,
-          onSelected: (val) {
-            if (isPickup) controller.selectedPickupDate.value = label;
-            else controller.selectedDeliveryDate.value = label;
+        padding: const EdgeInsets.only(right: 10),
+        child: InkWell(
+          onTap: () {
+            if (isPickup) controller.selectedPickupDate.value = value;
+            else controller.selectedDeliveryDate.value = value;
           },
-          selectedColor: Colors.white,
-          backgroundColor: Colors.white.withOpacity(0.9),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: isSelected ? Colors.blue : Colors.grey.shade300, width: isSelected ? 2 : 1)),
-          labelStyle: GoogleFonts.poppins(color: isSelected ? Colors.blue : Colors.black, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal),
-          showCheckmark: false,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isSelected ? Colors.blue : Colors.grey.shade300,
+                width: isSelected ? 2 : 1,
+              ),
+            ),
+            child: Text(
+              label,
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: Colors.black87,
+              ),
+            ),
+          ),
         ),
       );
     });
@@ -307,30 +363,30 @@ class OrderView extends GetView<OrderController> {
     return Obx(() {
       bool isSelected = controller.selectedTime.value == time;
       return Padding(
-        padding: const EdgeInsets.only(right: 8.0),
-        child: ChoiceChip(
-          label: Text(time),
-          selected: isSelected,
-          onSelected: (val) => controller.selectedTime.value = time,
-          selectedColor: Colors.white,
-          backgroundColor: Colors.white.withOpacity(0.9),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: isSelected ? Colors.blue : Colors.grey.shade300, width: isSelected ? 2 : 1)),
-          labelStyle: GoogleFonts.poppins(color: isSelected ? Colors.blue : Colors.black, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal),
-          showCheckmark: false,
+        padding: const EdgeInsets.only(right: 10),
+        child: InkWell(
+          onTap: () => controller.selectedTime.value = time,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isSelected ? Colors.blue : Colors.grey.shade300,
+                width: isSelected ? 2 : 1,
+              ),
+            ),
+            child: Text(
+              time,
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: Colors.black87,
+              ),
+            ),
+          ),
         ),
       );
     });
-  }
-
-  Widget _mapButton(IconData icon, VoidCallback onTap, {Color color = Colors.blueAccent}) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        width: 35,
-        height: 35,
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)]),
-        child: Icon(icon, size: 20, color: color),
-      ),
-    );
   }
 }
