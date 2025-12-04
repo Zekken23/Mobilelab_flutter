@@ -16,20 +16,18 @@ class DashboardView extends GetView<DashboardController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FB),
-      
-      // --- BODY DENGAN 6 HALAMAN ---
       body: Obx(() => IndexedStack(
         index: controller.tabIndex.value,
         children: [
-          _buildHomeView(),         // Index 0: Home
-          const OrderView(),        // Index 1: Booking
-          const HistoryView(),      // Index 2: History (SUDAH KEMBALI)
-          ChatView(),               // Index 3: Chat
-          const ProfileView(),      // Index 4: Profile
+          _buildHomeView(),
+          const OrderView(),
+          const HistoryView(),
+          ChatView(),
+          const ProfileView(),
         ],
       )),
       
-      // --- NAVBAR BAWAH (6 ITEM) ---
+      // --- NAVBAR BAWAH ---
       bottomNavigationBar: Obx(() => Container(
         decoration: BoxDecoration(
           boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)]
@@ -40,7 +38,7 @@ class DashboardView extends GetView<DashboardController> {
           selectedItemColor: Colors.blueAccent,
           unselectedItemColor: Colors.grey,
           showUnselectedLabels: true,
-          type: BottomNavigationBarType.fixed, // Wajib fixed jika item > 3
+          type: BottomNavigationBarType.fixed,
           backgroundColor: Colors.white,
           elevation: 0,
           selectedLabelStyle: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.bold),
@@ -56,14 +54,12 @@ class DashboardView extends GetView<DashboardController> {
       )),
     );
   }
-
-  // --- TAMPILAN UTAMA (HOME) ---
+  
   Widget _buildHomeView() {
     final profileC = Get.put(ProfileController()); 
 
     return Stack(
       children: [
-        // 1. BACKGROUND IMAGE (PALING BELAKANG)
         Container(
           width: double.infinity,
           height: double.infinity,

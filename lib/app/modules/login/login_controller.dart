@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../routes/app_pages.dart';
-// Import AdminView agar bisa diarahkan ke sana
 import '../admin/admin_view.dart'; 
 
 class LoginController extends GetxController {

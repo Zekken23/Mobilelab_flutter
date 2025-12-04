@@ -3,9 +3,6 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'chat_controller.dart';
 
-// Hapus import profile karena tidak dipakai untuk foto
-// import '../profile/profile_controller.dart'; 
-
 class ChatView extends StatelessWidget {
   final ChatController controller = Get.put(ChatController());
 
@@ -29,10 +26,10 @@ class ChatView extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.smart_toy, color: Colors.white, size: 20), // Icon Bot
+              const Icon(Icons.smart_toy, color: Colors.white, size: 20), 
               const SizedBox(width: 8),
               Text(
-                "Raja Bot Assistant", // Ganti Nama agar user tau ini bot
+                "Raja cuci Assistant", 
                 style: GoogleFonts.poppins(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -127,8 +124,8 @@ class ChatView extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: msg.isSender 
-                    ? const Color(0xFF2E3192) // Warna User (Biru Tua)
-                    : const Color(0xFFF0F2F5), // Warna Bot (Abu Muda)
+                    ? const Color(0xFF2E3192)
+                    : const Color(0xFFF0F2F5),
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(16),
                   topRight: const Radius.circular(16),
@@ -159,8 +156,6 @@ class ChatView extends StatelessWidget {
               ),
             ),
           ),
-
-          // Icon User (Kanan)
           if (msg.isSender)
             const Padding(
               padding: EdgeInsets.only(left: 10),

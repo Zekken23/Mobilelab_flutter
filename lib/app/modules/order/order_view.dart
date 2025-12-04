@@ -38,20 +38,18 @@ class OrderView extends GetView<OrderController> {
       // --- MODIFIKASI DIMULAI DARI SINI (STACK) ---
       body: Stack(
         children: [
-          // 1. BACKGROUND IMAGE
           Container(
             height: double.infinity,
             width: double.infinity,
             decoration: const BoxDecoration(
               image: DecorationImage(
-                // Ganti dengan nama file background Anda
-                image: AssetImage("assets/pemesananbackground.png"), 
+                image: AssetImage("assets/pemesback.png"), 
                 fit: BoxFit.cover,
               ),
             ),
             // Tambahan: Lapisan putih transparan agar teks tetap mudah dibaca
             child: Container(
-              color: Colors.white.withOpacity(0.85), 
+              color: Colors.white.withOpacity(0.15), 
             ),
           ),
 

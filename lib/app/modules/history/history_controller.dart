@@ -23,8 +23,8 @@ class HistoryController extends GetxController {
       final response = await Supabase.instance.client
           .from('orders')
           .select()
-          .eq('user_id', user.id) // Filter berdasarkan User ID
-          .order('created_at', ascending: false); // Urutkan dari terbaru
+          .eq('user_id', user.id) 
+          .order('created_at', ascending: false);
       
       myOrders.value = List<Map<String, dynamic>>.from(response);
     } catch (e) {
