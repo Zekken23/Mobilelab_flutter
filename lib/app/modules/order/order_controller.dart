@@ -172,14 +172,6 @@ class OrderController extends GetxController {
       // --- 1. TAMPILKAN SNACKBAR (Feedback UI) ---
       Get.snackbar("Sukses", "Pesanan dibuat!",
           backgroundColor: Colors.green, colorText: Colors.white);
-
-      // --- 2. TAMPILKAN NOTIFIKASI (Feedback System Tray) ---
-      // Panggil fungsi notifikasi manual yang baru kita buat
-      // NotificationHandler().showSimpleNotification(
-      //   "Pesanan Berhasil! 🎉",
-      //   "Laundry ${selectedService.value} Anda sedang diproses."
-      // );
-
       clearForm();
     } catch (e) {
       Get.snackbar("Gagal", "Error: $e",
