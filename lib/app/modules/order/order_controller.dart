@@ -5,7 +5,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:geocoding/geocoding.dart'; 
+import 'package:geocoding/geocoding.dart';
+import '../../utils/notification_handler.dart';
 
 class OrderController extends GetxController {
   final mapController = MapController();
@@ -162,7 +163,16 @@ class OrderController extends GetxController {
         'status': 'Sedang Dicuci',
       });
 
+      // --- 1. TAMPILKAN SNACKBAR (Feedback UI) ---
       Get.snackbar("Sukses", "Pesanan dibuat!", backgroundColor: Colors.green, colorText: Colors.white);
+      
+      // --- 2. TAMPILKAN NOTIFIKASI (Feedback System Tray) ---
+      // Panggil fungsi notifikasi manual yang baru kita buat
+      NotificationHandler().showSimpleNotification(
+        "Pesanan Berhasil! 🎉", 
+        "Laundry ${selectedService.value} Anda sedang diproses."
+      );
+
       clearForm();
     } catch (e) {
       Get.snackbar("Gagal", "Error: $e", backgroundColor: Colors.red, colorText: Colors.white);

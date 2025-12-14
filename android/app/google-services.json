@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "522641273946",
+    "project_id": "modul1-64236",
+    "storage_bucket": "modul1-64236.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:522641273946:android:5cc4d784db81cb39c3d463",
+        "android_client_info": {
+          "package_name": "com.example.demo5"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYQ5B00vhmDWRwth0Z0sLO8tDYj7P_iWE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:522641273946:android:a366c8103322dabbc3d463",
+        "android_client_info": {
+          "package_name": "com.mobile.modul6"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYQ5B00vhmDWRwth0Z0sLO8tDYj7P_iWE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:522641273946:android:36f4bb7033e64673c3d463",
+        "android_client_info": {
+          "package_name": "com.umm.laundryapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYQ5B00vhmDWRwth0Z0sLO8tDYj7P_iWE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

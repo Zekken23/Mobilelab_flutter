@@ -173,7 +173,7 @@ class ChatController extends GetxController {
 
   // ✅ CEK ADMIN KEYWORD
   bool _isAskingForAdmin(String text) {
-    return _containsAny(text, ['admin', 'manusia', 'wa', 'whatsapp', 'telepon', 'hubungi', 'kontak', 'customer service', 'cs']);
+    return _containsAny(text, ['admin','Admin', 'manusia', 'wa', 'whatsapp', 'telepon', 'hubungi', 'kontak', 'customer service', 'cs']);
   }
 
   // ✅ DIALOG WHATSAPP

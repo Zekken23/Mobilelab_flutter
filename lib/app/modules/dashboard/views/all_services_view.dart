@@ -72,7 +72,7 @@ class AllServicesView extends StatelessWidget {
                     ),
                     child: TextField(
                       decoration: InputDecoration(
-                        hintText: "Search for service...",
+                        hintText: "Cari layanan anda...",
                         hintStyle: GoogleFonts.poppins(color: Colors.grey),
                         prefixIcon: const Icon(Icons.search, color: Colors.black54),
                         border: InputBorder.none,
@@ -84,7 +84,7 @@ class AllServicesView extends StatelessWidget {
                   const SizedBox(height: 20),
 
                   Text(
-                    "Services",
+                    "Layanan Kami",
                     style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
 

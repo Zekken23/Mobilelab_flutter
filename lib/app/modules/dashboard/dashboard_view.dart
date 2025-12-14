@@ -46,9 +46,9 @@ class DashboardView extends GetView<DashboardController> {
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Home'),
             BottomNavigationBarItem(icon: Icon(Icons.calendar_today_outlined), activeIcon: Icon(Icons.calendar_today), label: 'Booking'),
-            BottomNavigationBarItem(icon: Icon(Icons.history), activeIcon: Icon(Icons.history_edu), label: 'History'),
+            BottomNavigationBarItem(icon: Icon(Icons.history), activeIcon: Icon(Icons.history_edu), label: 'Riwayat'),
             BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), activeIcon: Icon(Icons.chat_bubble), label: 'Chat'),
-            BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Account'),
+            BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Profil'),
           ],
         ),
       )),
@@ -108,7 +108,7 @@ class DashboardView extends GetView<DashboardController> {
                               profileC.nama.value, 
                               style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
                             )),
-                            Text("Welcome Back", style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey)),
+                            Text("Selamat datang kembali", style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey)),
                           ],
                         ),
                       ],
@@ -143,7 +143,7 @@ class DashboardView extends GetView<DashboardController> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("Your Location", style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12)),
+                            Text("lokasi anda", style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12)),
                             Text("Tegalgondo, Malang", style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14), overflow: TextOverflow.ellipsis),
                           ],
                         ),
@@ -157,7 +157,7 @@ class DashboardView extends GetView<DashboardController> {
                 // 3. SEARCH BAR
                 TextField(
                   decoration: InputDecoration(
-                    hintText: "Search for service...",
+                    hintText: "cari layanan anda...",
                     hintStyle: GoogleFonts.poppins(color: Colors.grey),
                     prefixIcon: const Icon(Icons.search, color: Colors.grey),
                     filled: true,
@@ -170,7 +170,7 @@ class DashboardView extends GetView<DashboardController> {
                 const SizedBox(height: 24),
 
                 // 4. SERVICES SECTION
-                _buildSectionHeader("Services"),
+                _buildSectionHeader("Layanan kami"),
                 const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -200,7 +200,7 @@ class DashboardView extends GetView<DashboardController> {
                 const SizedBox(height: 24),
 
                 // 6. PRICE LIST SECTION
-                _buildSectionHeader("Price List"),
+                _buildSectionHeader("List harga"),
                 const SizedBox(height: 12),
                 GridView.count(
                   shrinkWrap: true,
@@ -245,7 +245,6 @@ class DashboardView extends GetView<DashboardController> {
   }
 
   // --- WIDGET HELPERS ---
-
   Widget _buildSectionHeader(String title) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -255,7 +254,7 @@ class DashboardView extends GetView<DashboardController> {
           onTap: () {
             Get.to(() => const AllServicesView()); 
           },
-          child: Text("See all", style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey, decoration: TextDecoration.underline)),
+          child: Text("Selengkapnya", style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey, decoration: TextDecoration.underline)),
         ),
       ],
     );

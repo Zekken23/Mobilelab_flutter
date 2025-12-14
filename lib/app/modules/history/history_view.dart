@@ -5,7 +5,6 @@ import 'history_controller.dart';
 
 class HistoryView extends StatelessWidget {
   const HistoryView({super.key});
-
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(HistoryController());
