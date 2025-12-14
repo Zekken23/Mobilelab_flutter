@@ -5,114 +5,98 @@ import 'package:get/get.dart';
 import '../routes/app_pages.dart';
 
 // 1. HANDLER BACKGROUND (Wajib Top-Level Function)
-@pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print('Notifikasi masuk saat background: ${message.messageId}');
-}
 
 class NotificationHandler {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-  final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _localNotifications =
+      FlutterLocalNotificationsPlugin();
 
-  // 2. INISIALISASI UTAMA
   Future<void> initPushNotification() async {
-    // Izin Notifikasi
-    NotificationSettings settings = await _firebaseMessaging.requestPermission(
+    await _firebaseMessaging.requestPermission(
       alert: true,
       badge: true,
       sound: true,
     );
-    print('Izin user: ${settings.authorizationStatus}');
 
-    // Ambil Token
-    _firebaseMessaging.getToken().then((token) {
-      print('FCM TOKEN: $token');
-    });
+    final token = await _firebaseMessaging.getToken();
+    print('FCM TOKEN: $token');
 
-    // Init Local Notification
     await _initLocalNotification();
+    await _createAndroidChannel();
 
-    // Listener Background
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    // Foreground Notification
+    FirebaseMessaging.onMessage.listen(showLocalNotification);
 
-    // Listener Foreground (Saat aplikasi dibuka)
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('Pesan masuk saat foreground: ${message.notification?.title}');
-      if (message.notification != null) {
-        // Panggil fungsi yang sudah didefinisikan di bawah
-        showLocalNotification(message);
-      }
-    });
+    // Background Notification
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageClick);
 
-    // Listener Saat Notifikasi Diklik
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('Notifikasi diklik!');
-    });
+    final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+
+    if (initialMessage != null) {
+      _handleMessageClick(initialMessage);
+    }
   }
 
   Future<void> _initLocalNotification() async {
-    const AndroidInitializationSettings androidSettings =
+    const androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
-    const InitializationSettings settings = InitializationSettings(
-      android: androidSettings,
-    );
 
     await _localNotifications.initialize(
-      settings,
-      onDidReceiveNotificationResponse: (NotificationResponse response) {
-        print("Notifikasi Lokal diklik: ${response.payload}");
-        if (response.payload == 'order_success') {
-           Get.toNamed(Routes.DASHBOARD, arguments: 2); 
-        }
-      },
+      const InitializationSettings(android: androidSettings),
+      onDidReceiveNotificationResponse: _onLocalNotificationClick,
     );
   }
 
-  void showLocalNotification(RemoteMessage message) {
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'raja_cuci_channel',       
-      'Raja Cuci Notifications', 
-      channelDescription: 'Notifikasi update status cucian',
+  Future<void> _createAndroidChannel() async {
+    const channel = AndroidNotificationChannel(
+      'raja_cuci_channel',
+      'Raja Cuci Notifications',
+      description: 'Notifikasi update status cucian',
       importance: Importance.max,
-      priority: Priority.high,
-      ticker: 'ticker',
-      playSound: true,
-      sound: RawResourceAndroidNotificationSound('notif_laundry'), 
-      icon: '@mipmap/ic_launcher',
+      sound: RawResourceAndroidNotificationSound('notif_laundry'),
     );
 
-    const NotificationDetails platformDetails =
-        NotificationDetails(android: androidDetails);
+    await _localNotifications
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
+  }
+
+  void showLocalNotification(RemoteMessage message) {
+    final notification = message.notification;
+    if (notification == null) return;
+
+    const androidDetails = AndroidNotificationDetails(
+      'raja_cuci_channel',
+      'Raja Cuci Notifications',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
 
     _localNotifications.show(
       message.hashCode,
-      message.notification?.title,
-      message.notification?.body,
-      platformDetails,
+      notification.title,
+      notification.body,
+      const NotificationDetails(android: androidDetails),
       payload: jsonEncode(message.data),
     );
   }
 
-  void showSimpleNotification(String title, String body) {
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'raja_cuci_channel',       
-      'Raja Cuci Notifications', 
-      channelDescription: 'Notifikasi aplikasi',
-      importance: Importance.max,
-      priority: Priority.high,
-      playSound: true,
-      sound: RawResourceAndroidNotificationSound('notif_laundry'), 
-    );
+  void _onLocalNotificationClick(NotificationResponse response) {
+    if (response.payload == null) return;
 
-    const NotificationDetails platformDetails =
-        NotificationDetails(android: androidDetails);
+    final data = jsonDecode(response.payload!);
 
-    _localNotifications.show(
-      DateTime.now().millisecond,
-      title,
-      body,
-      platformDetails,
-      payload: 'order_success', 
-    );
+    if (data['type'] == 'order_success') {
+      Get.toNamed(Routes.DASHBOARD, arguments: 2);
+    }
+  }
+
+  void _handleMessageClick(RemoteMessage message) {
+    final data = message.data;
+
+    if (data['type'] == 'order_success') {
+      Get.toNamed(Routes.DASHBOARD, arguments: 2);
+    }
   }
 }
