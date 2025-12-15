@@ -7,6 +7,8 @@ class AdminController extends GetxController {
   var orders = <Map<String, dynamic>>[].obs;
   var isLoading = false.obs;
   var tabIndex = 0.obs;
+  var notifications = <Map<String, dynamic>>[].obs;
+  var unreadCount = 0.obs;
 
   // Controller untuk Input Ganti Akun
   final emailC = TextEditingController();
@@ -17,19 +19,20 @@ class AdminController extends GetxController {
   void onInit() {
     super.onInit();
     fetchAllOrders();
+    fetchNotifications();
   }
 
   List<Map<String, dynamic>> get activeOrders => orders.where((order) {
-    String status = order['status'] ?? "";
-    // Tampilkan yang BELUM selesai
-    return status != "Selesai" && status != "Sampai Tujuan";
-  }).toList();
+        String status = order['status'] ?? "";
+        // Tampilkan yang BELUM selesai
+        return status != "Selesai" && status != "Sampai Tujuan";
+      }).toList();
 
   List<Map<String, dynamic>> get historyOrders => orders.where((order) {
-    String status = order['status'] ?? "";
-    // Tampilkan yang SUDAH selesai
-    return status == "Selesai" || status == "Sampai Tujuan";
-  }).toList();
+        String status = order['status'] ?? "";
+        // Tampilkan yang SUDAH selesai
+        return status == "Selesai" || status == "Sampai Tujuan";
+      }).toList();
 
   // --- FETCH ORDERS ---
   Future<void> fetchAllOrders() async {
@@ -39,7 +42,7 @@ class AdminController extends GetxController {
           .from('orders')
           .select()
           .order('created_at', ascending: false);
-      
+
       orders.value = List<Map<String, dynamic>>.from(response);
     } catch (e) {
       print("Error fetch: $e");
@@ -48,33 +51,60 @@ class AdminController extends GetxController {
     }
   }
 
-  // --- UPDATE STATUS ---
-  Future<void> updateStatus(int idOrder, String newStatus, {String? namaKurir}) async {
+  // Fetch All Notification
+  Future<void> fetchNotifications() async {
     try {
-      Map<String, dynamic> updates = {'status': newStatus};
-      if (namaKurir != null) updates['nama_kurir'] = namaKurir;
+      final response = await Supabase.instance.client
+          .from('notification')
+          .select()
+          .order('created_at', ascending: false);
+      notifications.value = List<Map<String, dynamic>>.from(response);
 
-      await Supabase.instance.client.from('orders').update(updates).eq('id', idOrder);
-      
-      await fetchAllOrders(); // Refresh data
-      
-      if (Get.isDialogOpen ?? false) Get.back();
-      if (Get.isBottomSheetOpen ?? false) Get.back();
-      
-      Get.snackbar("Sukses", "Status berubah: $newStatus", backgroundColor: Colors.green, colorText: Colors.white);
+      unreadCount.value =
+          notifications.where((n) => n['is_read'] == false).length;
     } catch (e) {
-      Get.snackbar("Gagal", "Error: $e", backgroundColor: Colors.red, colorText: Colors.white);
+      print("Error fetch notification: $e");
+    }
+  }
+
+  // --- UPDATE STATUS ---
+  Future<void> updateStatus(int idOrder, String newStatus,
+      {String? namaKurir}) async {
+    try {
+      await Supabase.instance.client
+          .from('orders')
+          .update({'status': newStatus}).eq('id', idOrder);
+
+      // 🔔 SIMPAN RIWAYAT NOTIFIKASI ADMIN
+      if (newStatus == "Selesai") {
+        await Supabase.instance.client.from('notification').insert({
+          'order_id': idOrder,
+          'title': 'Pesanan Selesai 🎉',
+          'is_read': false,
+          'message': 'Pesanan #$idOrder telah selesai diproses',
+          'type': 'order_complete',
+        });
+      }
+
+      await fetchAllOrders();
+
+      Get.snackbar("Sukses", "Status berubah: $newStatus",
+          backgroundColor: Colors.green, colorText: Colors.white);
+    } catch (e) {
+      Get.snackbar("Gagal", "$e",
+          backgroundColor: Colors.red, colorText: Colors.white);
     }
   }
 
   void changeTabIndex(int index) {
     tabIndex.value = index;
   }
-  
+
   // --- FITUR BARU: GANTI EMAIL ---
   Future<void> updateEmail() async {
     if (emailC.text.isEmpty || !emailC.text.contains('@')) {
-      Get.snackbar("Error", "Email tidak valid", backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar("Error", "Email tidak valid",
+          backgroundColor: Colors.red, colorText: Colors.white);
       return;
     }
 
@@ -82,27 +112,33 @@ class AdminController extends GetxController {
       await Supabase.instance.client.auth.updateUser(
         UserAttributes(email: emailC.text),
       );
-      
+
       // Update juga di tabel profiles agar sinkron
       final user = Supabase.instance.client.auth.currentUser;
       if (user != null) {
-        await Supabase.instance.client.from('profiles').update({
-          'email': emailC.text
-        }).eq('id', user.id);
+        await Supabase.instance.client
+            .from('profiles')
+            .update({'email': emailC.text}).eq('id', user.id);
       }
 
       Get.back();
       emailC.clear();
-      Get.snackbar("Sukses", "Email berhasil diganti! Silakan cek inbox email baru untuk konfirmasi.", backgroundColor: Colors.green, colorText: Colors.white, duration: const Duration(seconds: 4));
+      Get.snackbar("Sukses",
+          "Email berhasil diganti! Silakan cek inbox email baru untuk konfirmasi.",
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 4));
     } catch (e) {
-      Get.snackbar("Gagal", "Error: $e", backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar("Gagal", "Error: $e",
+          backgroundColor: Colors.red, colorText: Colors.white);
     }
   }
 
   // --- FITUR BARU: GANTI PASSWORD ---
   Future<void> updatePassword() async {
     if (passC.text.length < 6) {
-      Get.snackbar("Error", "Password minimal 6 karakter", backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar("Error", "Password minimal 6 karakter",
+          backgroundColor: Colors.red, colorText: Colors.white);
       return;
     }
 
@@ -110,12 +146,14 @@ class AdminController extends GetxController {
       await Supabase.instance.client.auth.updateUser(
         UserAttributes(password: passC.text),
       );
-      
+
       Get.back();
       passC.clear();
-      Get.snackbar("Sukses", "Password berhasil diubah", backgroundColor: Colors.green, colorText: Colors.white);
+      Get.snackbar("Sukses", "Password berhasil diubah",
+          backgroundColor: Colors.green, colorText: Colors.white);
     } catch (e) {
-      Get.snackbar("Gagal", "Error: $e", backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar("Gagal", "Error: $e",
+          backgroundColor: Colors.red, colorText: Colors.white);
     }
   }
 
