@@ -4,8 +4,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import '../routes/app_pages.dart';
 
-// 1. HANDLER BACKGROUND (Wajib Top-Level Function)
-
 class NotificationHandler {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _localNotifications =
@@ -83,13 +81,58 @@ class NotificationHandler {
     );
   }
 
+  void showTestNotification({
+    required String title,
+    required String body,
+    String type = 'order_success',
+  }) {
+    const androidDetails = AndroidNotificationDetails(
+      'raja_cuci_channel',
+      'Raja Cuci Notifications',
+      importance: Importance.max,
+      priority: Priority.high,
+      playSound: false,
+    );
+
+    _localNotifications.show(
+      3,
+      title,
+      body,
+      const NotificationDetails(android: androidDetails),
+      payload: jsonEncode({'type': type}),
+    );
+  }
+
+  void showCustomSoundNotification({
+    required String title,
+    required String body,
+    String type = 'order_success',
+  }) {
+    const androidDetails = AndroidNotificationDetails(
+      'raja_cuci_channel',
+      'Raja Cuci Notifications',
+      importance: Importance.max,
+      priority: Priority.high,
+      playSound: true,
+      sound: RawResourceAndroidNotificationSound('washingmachine'),
+    );
+
+    _localNotifications.show(
+      2,
+      title,
+      body,
+      const NotificationDetails(android: androidDetails),
+      payload: jsonEncode({'type': type}),
+    );
+  }
+
   void _onLocalNotificationClick(NotificationResponse response) {
     if (response.payload == null) return;
 
     final data = jsonDecode(response.payload!);
 
     if (data['type'] == 'order_success') {
-      Get.toNamed(Routes.DASHBOARD, arguments: 2);
+      Get.toNamed(Routes.ORDER, arguments: 2);
     }
   }
 
@@ -97,7 +140,7 @@ class NotificationHandler {
     final data = message.data;
 
     if (data['type'] == 'order_success') {
-      Get.toNamed(Routes.DASHBOARD, arguments: 2);
+      Get.toNamed(Routes.ORDER, arguments: 2);
     }
   }
 }

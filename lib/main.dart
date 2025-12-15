@@ -21,6 +21,8 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  Get.put(NotificationHandler(), permanent: true);
+
   await NotificationHandler().initPushNotification();
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);

@@ -15,7 +15,8 @@ class OrderView extends GetView<OrderController> {
       appBar: AppBar(
         title: Text(
           "Pemesanan Laundry",
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
+          style: GoogleFonts.poppins(
+              fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
         ),
         centerTitle: true,
         // Gradient Header Biru (Dipertahankan)
@@ -34,7 +35,7 @@ class OrderView extends GetView<OrderController> {
           onPressed: () => Get.back(),
         ),
       ),
-      
+
       // --- MODIFIKASI DIMULAI DARI SINI (STACK) ---
       body: Stack(
         children: [
@@ -43,13 +44,13 @@ class OrderView extends GetView<OrderController> {
             width: double.infinity,
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage("assets/pemesback.png"), 
+                image: AssetImage("assets/pemesback.png"),
                 fit: BoxFit.cover,
               ),
             ),
             // Tambahan: Lapisan putih transparan agar teks tetap mudah dibaca
             child: Container(
-              color: Colors.white.withOpacity(0.15), 
+              color: Colors.white.withOpacity(0.15),
             ),
           ),
 
@@ -63,7 +64,8 @@ class OrderView extends GetView<OrderController> {
                   // 1. FORM INPUT
                   _buildTextField("Nama", controller.namaC),
                   const SizedBox(height: 12),
-                  _buildTextField("No Telp", controller.noTelpC, isNumber: true),
+                  _buildTextField("No Telp", controller.noTelpC,
+                      isNumber: true),
                   const SizedBox(height: 12),
                   _buildTextField("Alamat Lengkap", controller.alamatC),
 
@@ -71,7 +73,7 @@ class OrderView extends GetView<OrderController> {
 
                   // 2. PETA
                   Container(
-                    height: 150, 
+                    height: 150,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(15),
                       border: Border.all(color: Colors.grey.shade300),
@@ -81,31 +83,38 @@ class OrderView extends GetView<OrderController> {
                       child: Stack(
                         children: [
                           Obx(() => FlutterMap(
-                            mapController: controller.mapController,
-                            options: MapOptions(
-                              initialCenter: controller.currentPosition.value,
-                              initialZoom: controller.currentZoom.value,
-                              onTap: (tapPosition, point) {
-                                controller.onMapTap(tapPosition, point);
-                              },
-                            ),
-                            children: [
-                              TileLayer(
-                                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                userAgentPackageName: 'com.yusron.rajacuci',
-                              ),
-                              MarkerLayer(markers: controller.markers.toList()),
-                            ],
-                          )),
+                                mapController: controller.mapController,
+                                options: MapOptions(
+                                  initialCenter:
+                                      controller.currentPosition.value,
+                                  initialZoom: controller.currentZoom.value,
+                                  onTap: (tapPosition, point) {
+                                    controller.onMapTap(tapPosition, point);
+                                  },
+                                ),
+                                children: [
+                                  TileLayer(
+                                    urlTemplate:
+                                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                    userAgentPackageName: 'com.yusron.rajacuci',
+                                  ),
+                                  MarkerLayer(
+                                      markers: controller.markers.toList()),
+                                ],
+                              )),
                           // Tombol Refresh Kecil
                           Positioned(
-                            bottom: 8, right: 8,
+                            bottom: 8,
+                            right: 8,
                             child: InkWell(
                               onTap: controller.getCurrentLocation,
                               child: Container(
                                 padding: const EdgeInsets.all(6),
-                                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                                child: const Icon(Icons.my_location, size: 20, color: Colors.blue),
+                                decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle),
+                                child: const Icon(Icons.my_location,
+                                    size: 20, color: Colors.blue),
                               ),
                             ),
                           ),
@@ -116,7 +125,7 @@ class OrderView extends GetView<OrderController> {
 
                   const SizedBox(height: 25),
 
-                  // 3. PILIH SERVICE 
+                  // 3. PILIH SERVICE
                   _buildSectionTitle("Pilih Service", suffix: "Lainnya"),
                   const SizedBox(height: 12),
                   Row(
@@ -134,19 +143,21 @@ class OrderView extends GetView<OrderController> {
                   _buildSectionTitle("Note pakaian"),
                   const SizedBox(height: 12),
                   Container(
-                    height: 120, 
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    height: 120,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.blue), 
+                      border: Border.all(color: Colors.blue),
                     ),
                     child: TextField(
                       controller: controller.noteC,
                       maxLines: 5,
                       decoration: InputDecoration(
                         hintText: "putih dipisah, yang hitam gampang luntur",
-                        hintStyle: GoogleFonts.poppins(color: Colors.grey.shade400, fontSize: 13),
+                        hintStyle: GoogleFonts.poppins(
+                            color: Colors.grey.shade400, fontSize: 13),
                         border: InputBorder.none,
                       ),
                     ),
@@ -176,7 +187,8 @@ class OrderView extends GetView<OrderController> {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        _buildChip("Ambil sendiri", "Ambil Sendiri", isPickup: false),
+                        _buildChip("Ambil sendiri", "Ambil Sendiri",
+                            isPickup: false),
                         _buildChip("hari ini", "Hari Ini", isPickup: false),
                         _buildChip("Besok", "Besok", isPickup: false),
                         _buildChip("lusa", "Lusa", isPickup: false),
@@ -208,23 +220,27 @@ class OrderView extends GetView<OrderController> {
                     width: double.infinity,
                     height: 55,
                     child: Obx(() => ElevatedButton(
-                      onPressed: controller.isLoading.value ? null : controller.submitOrder,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1E64D8), 
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        elevation: 4,
-                      ),
-                      child: controller.isLoading.value
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : Text(
-                              "Buat Pesanan",
-                              style: GoogleFonts.poppins(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                    )),
+                          onPressed: controller.isLoading.value
+                              ? null
+                              : controller.submitOrder,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1E64D8),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            elevation: 4,
+                          ),
+                          child: controller.isLoading.value
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white)
+                              : Text(
+                                  "Buat Pesanan",
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                        )),
                   ),
                   const SizedBox(height: 20),
                 ],
@@ -238,23 +254,25 @@ class OrderView extends GetView<OrderController> {
 
   // --- WIDGET HELPER (TETAP DIPERTAHANKAN) ---
 
-  Widget _buildTextField(String hint, TextEditingController c, {bool isNumber = false}) {
+  Widget _buildTextField(String hint, TextEditingController c,
+      {bool isNumber = false}) {
     return TextField(
       controller: c,
       keyboardType: isNumber ? TextInputType.phone : TextInputType.text,
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: GoogleFonts.poppins(color: Colors.grey.shade400),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         filled: true,
         fillColor: Colors.white, // Agar inputan jelas diatas background
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.blue), 
+          borderSide: const BorderSide(color: Colors.blue),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.blue), 
+          borderSide: const BorderSide(color: Colors.blue),
         ),
       ),
     );
@@ -266,7 +284,8 @@ class OrderView extends GetView<OrderController> {
       children: [
         Text(
           title,
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black),
+          style: GoogleFonts.poppins(
+              fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black),
         ),
         if (suffix != null)
           Text(
@@ -293,15 +312,19 @@ class OrderView extends GetView<OrderController> {
             ),
             boxShadow: [
               BoxShadow(
-                color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.grey.shade100, 
-                blurRadius: 10,
-                spreadRadius: isSelected ? 2 : 1
-              )
+                  color: isSelected
+                      ? Colors.blue.withOpacity(0.1)
+                      : Colors.grey.shade100,
+                  blurRadius: 10,
+                  spreadRadius: isSelected ? 2 : 1)
             ],
           ),
           child: Column(
             children: [
-              Image.asset(assetPath, width: 40, height: 40, errorBuilder: (c,e,s) => const Icon(Icons.broken_image)),
+              Image.asset(assetPath,
+                  width: 40,
+                  height: 40,
+                  errorBuilder: (c, e, s) => const Icon(Icons.broken_image)),
               const SizedBox(height: 8),
               Text(
                 title,
@@ -321,17 +344,19 @@ class OrderView extends GetView<OrderController> {
 
   Widget _buildChip(String label, String value, {required bool isPickup}) {
     return Obx(() {
-      String selected = isPickup 
-          ? controller.selectedPickupDate.value 
+      String selected = isPickup
+          ? controller.selectedPickupDate.value
           : controller.selectedDeliveryDate.value;
       bool isSelected = selected == value;
-      
+
       return Padding(
         padding: const EdgeInsets.only(right: 10),
         child: InkWell(
           onTap: () {
-            if (isPickup) controller.selectedPickupDate.value = value;
-            else controller.selectedDeliveryDate.value = value;
+            if (isPickup)
+              controller.selectedPickupDate.value = value;
+            else
+              controller.selectedDeliveryDate.value = value;
           },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),

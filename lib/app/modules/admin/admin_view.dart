@@ -1,3 +1,4 @@
+import 'package:demo5/app/modules/modul6/modul6_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -63,6 +64,11 @@ class AdminView extends StatelessWidget {
                     ),
                 ],
               )),
+          IconButton(
+              onPressed: () {
+                Get.to(Modul6View());
+              },
+              icon: Icon(Icons.nature_outlined))
         ],
       ),
 
