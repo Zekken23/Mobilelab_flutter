@@ -53,7 +53,7 @@ class NotificationHandler {
       'Raja Cuci Notifications',
       description: 'Notifikasi update status cucian',
       importance: Importance.max,
-      sound: RawResourceAndroidNotificationSound('notif_laundry'),
+      sound: RawResourceAndroidNotificationSound('washingmachine'),
     );
 
     await _localNotifications
@@ -71,6 +71,7 @@ class NotificationHandler {
       'Raja Cuci Notifications',
       importance: Importance.max,
       priority: Priority.high,
+      sound: RawResourceAndroidNotificationSound('washingmachine'),
     );
 
     _localNotifications.show(
