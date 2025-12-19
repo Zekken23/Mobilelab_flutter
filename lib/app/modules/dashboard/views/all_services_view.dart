@@ -2,13 +2,14 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../dashboard_controller.dart'; 
 
 class AllServicesView extends StatelessWidget {
   const AllServicesView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // DAFTAR LAYANAN LENGKAP (Pastikan nama file di folder assets/ sesuai)
+    // DAFTAR LAYANAN
     final List<Map<String, String>> services = [
       {"name": "Cuci Basah", "image": "assets/cucibasah.png"},
       {"name": "Cuci Kering", "image": "assets/cucikering.png"},
@@ -31,6 +32,8 @@ class AllServicesView extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Get.back(),
         ),
+        title: Text("Semua Layanan", style: GoogleFonts.poppins(color: Colors.black, fontWeight: FontWeight.bold)),
+        centerTitle: true,
       ),
       body: Stack(
         children: [
@@ -46,56 +49,30 @@ class AllServicesView extends StatelessWidget {
             ),
           ),
 
-          // 2. EFEK BLUR (Opsional, agar text lebih terbaca)
+          // 2. EFEK BLUR
           BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
             child: Container(
-              color: Colors.white.withOpacity(0.5), // Putih transparan
+              color: Colors.white.withOpacity(0.5), 
             ),
           ),
 
-          // 3. KONTEN GRID
+          // 3. KONTEN GRID (TANPA SEARCH BAR)
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // SEARCH BAR
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(30),
-                      boxShadow: [
-                        BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))
-                      ],
-                    ),
-                    child: TextField(
-                      decoration: InputDecoration(
-                        hintText: "Cari layanan anda...",
-                        hintStyle: GoogleFonts.poppins(color: Colors.grey),
-                        prefixIcon: const Icon(Icons.search, color: Colors.black54),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  Text(
-                    "Layanan Kami",
-                    style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-
-                  const SizedBox(height: 20),
-
+                  const SizedBox(height: 10),
+                  
                   // GRID MENU
                   Expanded(
                     child: GridView.builder(
+                      padding: const EdgeInsets.only(top: 20, bottom: 20),
                       itemCount: services.length,
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3, // 3 Kolom
+                        crossAxisCount: 3, 
                         crossAxisSpacing: 15,
                         mainAxisSpacing: 20,
                         childAspectRatio: 0.85,
@@ -118,43 +95,53 @@ class AllServicesView extends StatelessWidget {
   }
 
   Widget _buildServiceItem(String title, String assetPath) {
-    return Column(
-      children: [
-        // KOTAK ICON PUTIH
-        Container(
-          width: 80,
-          height: 80,
-          padding: const EdgeInsets.all(18), // Padding agar icon tidak terlalu besar
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                blurRadius: 10,
-                spreadRadius: 2,
-                offset: const Offset(0, 5),
-              )
-            ],
+    return GestureDetector(
+      onTap: () {
+        Get.back(); 
+        try {
+          if (Get.isRegistered<DashboardController>()) {
+            Get.find<DashboardController>().navigateToOrder(title);
+          }
+        } catch (e) {
+          print("Dashboard controller tidak ditemukan: $e");
+        }
+      },
+      child: Column(
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  blurRadius: 10,
+                  spreadRadius: 2,
+                  offset: const Offset(0, 5),
+                )
+              ],
+            ),
+            child: Image.asset(
+              assetPath,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, size: 30, color: Colors.grey),
+            ),
           ),
-          child: Image.asset(
-            assetPath,
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, size: 30, color: Colors.grey),
+          const SizedBox(height: 10),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.black,
+            ),
           ),
-        ),
-        const SizedBox(height: 10),
-        // TEXT TITLE
-        Text(
-          title,
-          textAlign: TextAlign.center,
-          style: GoogleFonts.poppins(
-            fontSize: 12,
-            fontWeight: FontWeight.w600, // Semi Bold
-            color: Colors.black,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

@@ -7,6 +7,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:geocoding/geocoding.dart';
 
+// --- IMPORT PERUBAHAN 1: Pastikan path ini sesuai dengan lokasi file OrderSuccessView kamu ---
+import '../order/order_success_view.dart'; 
+
 class OrderController extends GetxController {
   final mapController = MapController();
 
@@ -32,28 +35,28 @@ class OrderController extends GetxController {
   void onInit() {
     super.onInit();
     Future.delayed(const Duration(seconds: 1), () => getCurrentLocation());
+
+    // --- PERUBAHAN 2: Tangkap data layanan dari Dashboard ---
+    if (Get.arguments != null) {
+      selectedService.value = Get.arguments.toString();
+    }
   }
 
-  // --- FUNGSI SAAT PETA DI-TAP (BARU) ---
+  // --- FUNGSI SAAT PETA DI-TAP ---
   Future<void> onMapTap(TapPosition tapPosition, LatLng point) async {
     _updateMarker(point);
 
-    // 2. Isi text koordinat di bawah peta
     addressMap.value =
         "Lat: ${point.latitude.toStringAsFixed(5)}, Lng: ${point.longitude.toStringAsFixed(5)}";
 
-    // 3. Cari Alamat Asli (Reverse Geocoding)
     try {
       List<Placemark> placemarks =
           await placemarkFromCoordinates(point.latitude, point.longitude);
 
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks[0];
-        // Format alamat: Jalan, Kecamatan, Kota
         String fullAddress =
             "${place.street}, ${place.subLocality}, ${place.locality}, ${place.subAdministrativeArea}";
-
-        // Update Text Field Alamat secara otomatis
         alamatC.text = fullAddress;
       }
     } catch (e) {
@@ -63,7 +66,6 @@ class OrderController extends GetxController {
     }
   }
 
-  // Helper untuk update marker & kamera
   void _updateMarker(LatLng point) {
     currentPosition.value = point;
     markers.clear();
@@ -72,15 +74,11 @@ class OrderController extends GetxController {
         point: point,
         width: 80,
         height: 80,
-        // Icon Marker Besar & Jelas
         child: const Icon(Icons.location_on, color: Colors.red, size: 50),
       ),
     );
-    // Opsional: Pindahkan kamera ke titik baru
-    // mapController.move(point, currentZoom.value);
   }
 
-  // --- FUNGSI GPS (MODIFIKASI DIKIT) ---
   Future<void> getCurrentLocation() async {
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -103,11 +101,8 @@ class OrderController extends GetxController {
           await Geolocator.getCurrentPosition(desiredAccuracy: accuracy);
       LatLng point = LatLng(position.latitude, position.longitude);
 
-      // Gunakan logika yang sama dengan Tap Map
       _updateMarker(point);
       mapController.move(point, currentZoom.value);
-
-      // Ambil alamat juga saat pertama kali load
       onMapTap(TapPosition(Offset.zero, Offset.zero), point);
     } catch (e) {
       print("Error Map: $e");
@@ -152,6 +147,17 @@ class OrderController extends GetxController {
 
     isLoading.value = true;
     try {
+      // 1. Simpan dulu data ke variabel lokal untuk dikirim ke halaman sukses
+      final orderData = {
+        'nama': namaC.text,
+        'no_telp': noTelpC.text,
+        'layanan': selectedService.value,
+        'alamat': alamatC.text,
+        'note': noteC.text,
+        'waktu': "${selectedPickupDate.value} - ${selectedTime.value}"
+      };
+
+      // 2. Insert ke Database Supabase
       await Supabase.instance.client.from('orders').insert({
         'user_id': user.id,
         'nama': namaC.text,
@@ -167,10 +173,10 @@ class OrderController extends GetxController {
         'status': 'Sedang Dicuci',
       });
 
-      // --- 1. TAMPILKAN SNACKBAR (Feedback UI) ---
-      Get.snackbar("Sukses", "Pesanan dibuat!",
-          backgroundColor: Colors.green, colorText: Colors.white);
+      // --- PERUBAHAN 3: Navigasi ke Halaman Sukses ---
       clearForm();
+      Get.off(() => const OrderSuccessView(), arguments: orderData);
+
     } catch (e) {
       Get.snackbar("Gagal", "Error: $e",
           backgroundColor: Colors.red, colorText: Colors.white);
