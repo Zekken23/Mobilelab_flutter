@@ -6,7 +6,6 @@ import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:geocoding/geocoding.dart';
-import '../../utils/notification_handler.dart';
 
 class OrderController extends GetxController {
   final mapController = MapController();
@@ -37,7 +36,6 @@ class OrderController extends GetxController {
 
   // --- FUNGSI SAAT PETA DI-TAP (BARU) ---
   Future<void> onMapTap(TapPosition tapPosition, LatLng point) async {
-    // 1. Pindahkan Marker ke titik yang diklik
     _updateMarker(point);
 
     // 2. Isi text koordinat di bawah peta
