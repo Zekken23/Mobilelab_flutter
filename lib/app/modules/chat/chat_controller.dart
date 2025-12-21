@@ -150,7 +150,7 @@ class ChatController extends GetxController {
     }
 
     // === TERIMA KASIH ===
-    if (_containsAny(msg, ['terima kasih', 'thanks', 'makasih', 'thx', 'thank you'])) {
+    if (_containsAny(msg, ['terima kasih', 'thanks', 'makasih', 'thx', 'thank you', 'tq', 'trims', 'oke', 'ok', 'sip', 'siap',])) {
       return "Sama-sama Kak! 😊\n\nSenang bisa membantu. Jangan ragu untuk tanya lagi ya!\n\nSampai jumpa! 👋";
     }
 

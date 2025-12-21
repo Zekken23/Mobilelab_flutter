@@ -7,7 +7,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:geocoding/geocoding.dart';
 
-// --- IMPORT PERUBAHAN 1: Pastikan path ini sesuai dengan lokasi file OrderSuccessView kamu ---
 import '../order/order_success_view.dart'; 
 
 class OrderController extends GetxController {
@@ -31,38 +30,45 @@ class OrderController extends GetxController {
   var selectedDeliveryDate = "".obs;
   var selectedTime = "".obs;
 
+  // --- TAMBAHAN BARU: DATA SEMUA LAYANAN (Slide Bar Data) ---
+  final List<Map<String, String>> serviceList = [
+    {"name": "Cuci Basah", "image": "assets/cucibasah.png"},
+    {"name": "Cuci Kering", "image": "assets/cucikering.png"},
+    {"name": "Setrika Wangi", "image": "assets/setrika.png"},
+    {"name": "Cuci Sepatu", "image": "assets/sepatu.png"},
+    {"name": "Cuci Tas", "image": "assets/tas.png"},
+    {"name": "Cuci Helm", "image": "assets/helm.png"},
+    {"name": "Cuci Spray", "image": "assets/spray.png"},
+    {"name": "Cuci Boneka", "image": "assets/boneka.png"},
+    {"name": "Cuci Jas/Gaun", "image": "assets/dress.png"},
+    {"name": "Cuci Kiloan", "image": "assets/cucibasah.png"},
+  ];
+
   @override
   void onInit() {
     super.onInit();
     Future.delayed(const Duration(seconds: 1), () => getCurrentLocation());
 
-    // --- PERUBAHAN 2: Tangkap data layanan dari Dashboard ---
     if (Get.arguments != null) {
       selectedService.value = Get.arguments.toString();
     }
   }
 
-  // --- FUNGSI SAAT PETA DI-TAP ---
+  // --- FUNGSI MAPS TETAP SAMA ---
   Future<void> onMapTap(TapPosition tapPosition, LatLng point) async {
     _updateMarker(point);
-
-    addressMap.value =
-        "Lat: ${point.latitude.toStringAsFixed(5)}, Lng: ${point.longitude.toStringAsFixed(5)}";
+    addressMap.value = "Lat: ${point.latitude.toStringAsFixed(5)}, Lng: ${point.longitude.toStringAsFixed(5)}";
 
     try {
-      List<Placemark> placemarks =
-          await placemarkFromCoordinates(point.latitude, point.longitude);
-
+      List<Placemark> placemarks = await placemarkFromCoordinates(point.latitude, point.longitude);
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks[0];
-        String fullAddress =
-            "${place.street}, ${place.subLocality}, ${place.locality}, ${place.subAdministrativeArea}";
+        String fullAddress = "${place.street}, ${place.subLocality}, ${place.locality}, ${place.subAdministrativeArea}";
         alamatC.text = fullAddress;
       }
     } catch (e) {
       print("Gagal convert alamat: $e");
-      alamatC.text =
-          "Lokasi terpilih (Koordinat: ${point.latitude}, ${point.longitude})";
+      alamatC.text = "Lokasi terpilih (Koordinat: ${point.latitude}, ${point.longitude})";
     }
   }
 
@@ -93,12 +99,8 @@ class OrderController extends GetxController {
         if (permission == LocationPermission.denied) return;
       }
 
-      LocationAccuracy accuracy = useHighAccuracy.value
-          ? LocationAccuracy.bestForNavigation
-          : LocationAccuracy.medium;
-
-      Position position =
-          await Geolocator.getCurrentPosition(desiredAccuracy: accuracy);
+      LocationAccuracy accuracy = useHighAccuracy.value ? LocationAccuracy.bestForNavigation : LocationAccuracy.medium;
+      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: accuracy);
       LatLng point = LatLng(position.latitude, position.longitude);
 
       _updateMarker(point);
@@ -109,45 +111,21 @@ class OrderController extends GetxController {
     }
   }
 
-  void zoomIn() {
-    if (currentZoom.value < 18) {
-      currentZoom.value++;
-      mapController.move(currentPosition.value, currentZoom.value);
-    }
-  }
-
-  void zoomOut() {
-    if (currentZoom.value > 5) {
-      currentZoom.value--;
-      mapController.move(currentPosition.value, currentZoom.value);
-    }
-  }
-
-  void toggleLocationMode() {
-    useHighAccuracy.toggle();
-    getCurrentLocation();
-  }
-
-  // --- SUBMIT ---
+  // --- SUBMIT ORDER TETAP SAMA ---
   Future<void> submitOrder() async {
-    if (namaC.text.isEmpty ||
-        noTelpC.text.isEmpty ||
-        selectedService.value.isEmpty) {
-      Get.snackbar("Peringatan", "Mohon lengkapi data",
-          backgroundColor: Colors.orange, colorText: Colors.white);
+    if (namaC.text.isEmpty || noTelpC.text.isEmpty || selectedService.value.isEmpty) {
+      Get.snackbar("Peringatan", "Mohon lengkapi data", backgroundColor: Colors.orange, colorText: Colors.white);
       return;
     }
 
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) {
-      Get.snackbar("Error", "Login dulu",
-          backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar("Error", "Login dulu", backgroundColor: Colors.red, colorText: Colors.white);
       return;
     }
 
     isLoading.value = true;
     try {
-      // 1. Simpan dulu data ke variabel lokal untuk dikirim ke halaman sukses
       final orderData = {
         'nama': namaC.text,
         'no_telp': noTelpC.text,
@@ -157,14 +135,12 @@ class OrderController extends GetxController {
         'waktu': "${selectedPickupDate.value} - ${selectedTime.value}"
       };
 
-      // 2. Insert ke Database Supabase
       await Supabase.instance.client.from('orders').insert({
         'user_id': user.id,
         'nama': namaC.text,
         'no_telp': noTelpC.text,
         'alamat_lengkap': alamatC.text,
-        'detail_lokasi':
-            "${currentPosition.value.latitude}, ${currentPosition.value.longitude}",
+        'detail_lokasi': "${currentPosition.value.latitude}, ${currentPosition.value.longitude}",
         'layanan': selectedService.value,
         'berat_items': noteC.text,
         'tgl_ambil': selectedPickupDate.value,
@@ -173,13 +149,11 @@ class OrderController extends GetxController {
         'status': 'Sedang Dicuci',
       });
 
-      // --- PERUBAHAN 3: Navigasi ke Halaman Sukses ---
       clearForm();
       Get.off(() => const OrderSuccessView(), arguments: orderData);
 
     } catch (e) {
-      Get.snackbar("Gagal", "Error: $e",
-          backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar("Gagal", "Error: $e", backgroundColor: Colors.red, colorText: Colors.white);
     } finally {
       isLoading.value = false;
     }

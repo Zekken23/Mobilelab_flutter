@@ -12,7 +12,6 @@ import 'app/utils/notification_handler.dart';
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print('Notifikasi masuk saat background: ${message.messageId}');
 }
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
